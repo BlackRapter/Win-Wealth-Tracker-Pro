@@ -6,22 +6,26 @@
     <title>Win Wealth Tracker Pro</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap');
+        body { font-family: 'Sarabun', sans-serif; }
+    </style>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans antialiased">
 
-    <!-- SETUP API SCREEN (แสดงเมื่อเปิดใช้งานครั้งแรกเพื่อป้องกัน URL หลุดใน GitHub) -->
+    <!-- SETUP API SCREEN -->
     <div id="setupApiScreen" class="fixed inset-0 bg-slate-900 flex items-center justify-center z-50 p-4 hidden">
         <div class="bg-white rounded-3xl p-8 w-full max-w-md text-center space-y-5 shadow-2xl border border-slate-100">
             <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-2xl mx-auto flex items-center justify-center text-2xl font-bold">⚙️</div>
             <div>
                 <h2 class="text-xl font-bold text-slate-900">เชื่อมต่อฐานข้อมูล Google Sheets</h2>
-                <p class="text-xs text-slate-400 mt-1">กรุณากรอก URL ของ Google Apps Script Web App</p>
+                <p class="text-xs text-slate-400 mt-1">กรุณาระบุ URL ของ Google Apps Script Web App เพื่อเชื่อมต่อข้อมูลส่วนตัวของคุณ</p>
             </div>
             <div class="space-y-3">
                 <input type="text" id="setupScriptUrl" placeholder="https://script.google.com/macros/s/.../exec" class="w-full text-xs px-3.5 py-3 border border-slate-200 rounded-xl outline-none focus:border-blue-500">
-                <p class="text-[10px] text-slate-500 text-left bg-slate-50 p-3 rounded-lg">💡 URL นี้จะถูกบันทึกไว้ในเบราว์เซอร์เครื่องนี้ของคุณคนเดียวอย่างปลอดภัย เมื่อนำโค้ดขึ้น GitHub แบบ Public คนอื่นจะไม่เห็น URL ส่วนตัวของคุณ</p>
+                <p class="text-[10px] text-slate-500 text-left bg-slate-50 p-3 rounded-lg">💡 ลิงก์นี้จะถูกบันทึกไว้ในเบราว์เซอร์ในเครื่องนี้ของคุณคนเดียวอย่างปลอดภัย (ไม่ถูกอัปโหลดขึ้น GitHub หรือเปิดเผยต่อสาธารณะ)</p>
             </div>
-            <button onclick="saveSetupApi()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-2xl font-semibold transition cursor-pointer">บันทึกและเข้าสู่ระบบ</button>
+            <button onclick="saveSetupApi()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-2xl font-semibold transition cursor-pointer">บันทึกเพื่อเข้าสู่ระบบ</button>
         </div>
     </div>
 
@@ -35,20 +39,20 @@
             </div>
             <input type="password" id="userPin" maxlength="4" onkeydown="if(event.key==='Enter')checkPin()" class="w-40 text-center tracking-widest text-2xl py-2 border-2 border-slate-200 rounded-2xl focus:border-blue-500 outline-none mx-auto block" placeholder="••••">
             <button onclick="checkPin()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-2xl font-semibold transition cursor-pointer">เข้าสู่ระบบ</button>
-            <button onclick="resetSavedApi()" class="w-full text-xs text-slate-400 hover:text-slate-600 cursor-pointer pt-2">⚙️ ตั้งค่า / เปลี่ยน URL เชื่อมต่อ API</button>
+            <button onclick="resetSavedApi()" class="w-full text-xs text-slate-400 hover:text-slate-600 cursor-pointer pt-2">⚙️ ตั้งค่าคีย์เชื่อมต่อ API ใหม่</button>
         </div>
     </div>
 
     <!-- MAIN APP -->
     <div id="mainScreen" class="hidden min-h-screen pb-14">
-        <!-- HEADER & TOP QUICK ACTIONS (ไม่ซ้ำซ้อน) -->
+        <!-- HEADER & TOP ACTIONS -->
         <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs">
             <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-3">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 bg-blue-600 text-white rounded-xl flex items-center justify-center font-bold text-lg">💰</div>
                     <div>
                         <h1 class="font-bold text-slate-800 text-base sm:text-lg">Win Wealth Manager Pro</h1>
-                        <p class="text-xs text-slate-400">ระบบบริหารการเงิน บัตรเครดิต หนี้สิน และการลงทุน</p>
+                        <p class="text-xs text-slate-400">จัดการเงิน บัญชี บัตรเครดิต หนี้สิน และการลงทุน</p>
                     </div>
                 </div>
                 <div class="flex flex-wrap items-center gap-2">
@@ -68,8 +72,8 @@
                     <div id="netWorthDisplay" class="text-3xl sm:text-4xl font-extrabold tracking-tight">฿0.00</div>
                     <div class="flex flex-wrap gap-4 sm:gap-6 pt-2 text-xs text-slate-300">
                         <span>ทรัพย์สินรวม: <strong id="totalAssets" class="text-emerald-400">฿0.00</strong></span>
-                        <span>ยอดบัตรเครดิต/PayLater รวม (ปลายเดือน+ผ่อน): <strong id="totalCreditAll" class="text-amber-400">฿0.00</strong></span>
-                        <span>หนี้สินอื่นๆ (บ้าน/รถ/สินเชื่อ): <strong id="totalOtherDebts" class="text-rose-400">฿0.00</strong></span>
+                        <span>ยอดใช้จ่ายผ่านบัตรเครดิตรวม: <strong id="totalCreditSpent" class="text-amber-400">฿0.00</strong></span>
+                        <span>หนี้สินผ่อนชำระประเภทอื่น: <strong id="totalInstallmentDebts" class="text-rose-400">฿0.00</strong></span>
                     </div>
                 </div>
                 <div class="absolute right-[-20px] bottom-[-20px] opacity-10 text-9xl font-bold select-none">💎</div>
@@ -79,47 +83,65 @@
             <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 space-y-4">
                 <div class="flex flex-wrap justify-between items-center gap-2">
                     <div>
-                        <h2 class="font-bold text-slate-800 text-sm sm:text-base">🏦 บัญชีธนาคาร & เงินสด</h2>
-                        <p class="text-xs text-slate-400">ยอดเงินคงเหลือรวม: <strong id="bankTotalText" class="text-emerald-600">฿0.00</strong></p>
+                        <h2 class="font-bold text-slate-800 text-sm sm:text-base">🏦 บัญชีธนาคาร & เงินสด (ทรัพย์สินหมุนเวียน)</h2>
+                        <p class="text-xs text-slate-400">ยอดเงินสดในบัญชีรวม: <strong id="bankTotalText" class="text-emerald-600">฿0.00</strong></p>
                     </div>
-                    <button onclick="openAddAccountModal('Bank')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-1.5 rounded-xl text-xs font-semibold cursor-pointer">+ เพิ่มบัญชีธนาคาร/เงินสด</button>
+                    <button onclick="openAddAccountModal('Bank')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-1.5 rounded-xl text-xs font-semibold cursor-pointer">+ เพิ่มบัญชี/เงินสด</button>
                 </div>
                 <div id="bankAccountsContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"></div>
             </div>
 
-            <!-- 2. CREDIT CARDS & PAYLATER (รวมยอดจ่ายปลายเดือน + ยอดผ่อนชำระ + วงเงินเต็มและคงเหลือ) -->
+            <!-- 2. CREDIT CARDS & PAYLATER (แบบ A: การ์ดกลุ่มใหญ่แชร์วงเงินร่วมกัน) -->
             <div class="bg-white rounded-3xl p-6 shadow-sm border border-rose-200 space-y-4">
                 <div class="flex flex-wrap justify-between items-center gap-2">
                     <div>
-                        <h2 class="font-bold text-rose-700 text-sm sm:text-base">💳 บัตรเครดิต & PayLater (สรุปวงเงิน และยอดรวมปลายเดือน + ผ่อนชำระ)</h2>
-                        <p class="text-xs text-slate-400">ยอดใช้วงเงินรวมทุกบัตร: <strong id="creditTotalText" class="text-rose-600">฿0.00</strong> (บันทึกยอดใช้จ่ายได้ที่ปุ่ม "📤 บันทึกรายจ่าย / รูดบัตร" ด้านบน)</p>
+                        <h2 class="font-bold text-rose-700 text-sm sm:text-base">💳 บัตรเครดิต & PayLater (การ์ดกลุ่มวงเงินร่วม)</h2>
+                        <p class="text-xs text-slate-400">ยอดใช้วงเงินรวมทุกบัตร: <strong id="creditTotalText" class="text-rose-600">฿0.00</strong> (เพิ่มบัตรผ่านปุ่มด้านขวา และไปรูดใช้จ่ายที่ปุ่มบันทึกรายจ่ายด้านบน)</p>
                     </div>
                     <button onclick="openAddAccountModal('CreditCard')" class="bg-rose-600 hover:bg-rose-700 text-white px-3.5 py-1.5 rounded-xl text-xs font-semibold cursor-pointer">+ เพิ่มบัตรเครดิต / PayLater</button>
                 </div>
                 <div id="creditCardsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
             </div>
 
-            <!-- 3. DEBTS & INSTALLMENTS (แยกตามบัตรเครดิต/PayLater และ บ้าน / รถ / อื่นๆ) -->
-            <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 space-y-4">
-                <div class="flex flex-wrap justify-between items-center gap-2">
-                    <div>
-                        <h2 class="font-bold text-slate-800 text-sm sm:text-base">📋 รายการหนี้สิน & ค่างวดผ่อนชำระ (แยกตามบัตร และหมวดบ้าน / รถ / อื่นๆ)</h2>
-                        <p class="text-xs text-slate-400">สามารถกดปุ่ม "💸 จ่ายงวดรวม" ของแต่ละบัตรเพื่อเลือกจ่ายหลายรายการพร้อมกัน หรือจ่ายรายตัวได้</p>
+            <!-- QUICK ACTIONS & CHARTS -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 space-y-4">
+                    <h2 class="font-bold text-slate-800 text-sm">⚡ บันทึกและสร้างรายการด่วน</h2>
+                    <div class="pt-1 border-t border-slate-100 space-y-2.5">
+                        <button onclick="openAddDebtModal()" class="w-full py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs cursor-pointer">+ เพิ่มรายการหนี้สิน / ผ่อนชำระ</button>
+                        <button onclick="openAddInvModal()" class="w-full py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs cursor-pointer">+ เพิ่มพอร์ตการลงทุน / หุ้น / กองทุน</button>
                     </div>
-                    <button onclick="openAddDebtModal()" class="bg-slate-800 hover:bg-slate-900 text-white px-3.5 py-1.5 rounded-xl text-xs font-semibold cursor-pointer">+ เพิ่มหนี้สิน (บ้าน/รถ/ผ่อนย้อนหลัง)</button>
+                </div>
+
+                <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 lg:col-span-2 flex flex-col justify-between">
+                    <h2 class="font-bold text-slate-800 text-sm mb-4">📊 สัดส่วนรายจ่ายตามหมวดหมู่</h2>
+                    <div class="h-48 relative flex items-center justify-center">
+                        <canvas id="expenseChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DEBTS & INSTALLMENTS -->
+            <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 space-y-4">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h2 class="font-bold text-slate-800 text-sm sm:text-base">📋 รายการหนี้สิน & ค่างวดผ่อนชำระ</h2>
+                        <p class="text-xs text-slate-400">รายการผ่อนชำระจากบัตร และค่างวดทั่วไปจะถูกแยกตามหมวดหมู่ที่นี่</p>
+                    </div>
+                    <button onclick="openAddDebtModal()" class="text-xs bg-rose-50 text-rose-600 hover:bg-rose-100 px-3 py-1.5 rounded-xl font-semibold cursor-pointer">+ เพิ่มหนี้สิน</button>
                 </div>
                 <div id="debtsContainer" class="space-y-5"></div>
             </div>
 
-            <!-- 4. INVESTMENTS (แสดงจำนวนเงินที่ได้กำไร + %) -->
+            <!-- INVESTMENTS -->
             <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 space-y-4">
-                <div class="flex flex-wrap justify-between items-center gap-2">
+                <div class="flex justify-between items-center">
                     <div>
-                        <h2 class="font-bold text-slate-800 text-sm sm:text-base">📈 พอร์ตการลงทุน (หุ้น, กองทุน, คริปโต, ทองคำ)</h2>
-                        <div class="flex flex-wrap gap-4 text-xs mt-1">
-                            <span class="text-slate-500">ต้นทุนรวม: <strong id="invTotalCost" class="text-slate-700">฿0.00</strong></span>
-                            <span class="text-slate-500">มูลค่าปัจจุบันรวม: <strong id="invTotalVal" class="text-slate-900">฿0.00</strong></span>
-                            <span class="text-slate-500">กำไร/ขาดทุนรวม: <strong id="invTotalProfit" class="text-emerald-600">+฿0.00 (0.00%)</strong></span>
+                        <h2 class="font-bold text-slate-800 text-sm sm:text-base">📈 พอร์ตการลงทุน</h2>
+                        <div class="flex flex-wrap gap-4 text-xs mt-1 text-slate-500">
+                            <span>ต้นทุนรวม: <strong id="invTotalCost" class="text-slate-700">฿0.00</strong></span>
+                            <span>มูลค่าปัจจุบันรวม: <strong id="invTotalVal" class="text-slate-900">฿0.00</strong></span>
+                            <span>กำไร/ขาดทุนรวม: <strong id="invTotalProfit" class="text-emerald-600">+฿0.00 (0.00%)</strong></span>
                         </div>
                     </div>
                     <button onclick="openAddInvModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-3.5 py-1.5 rounded-xl text-xs font-semibold cursor-pointer">+ เพิ่มรายการลงทุน</button>
@@ -127,70 +149,16 @@
                 <div id="investmentsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
             </div>
 
-            <!-- 5. MONTHLY INCOME / EXPENSE SUMMARY & CHART -->
-            <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 space-y-5">
-                <div class="flex flex-wrap justify-between items-center gap-3">
-                    <div>
-                        <h2 class="font-bold text-slate-800 text-sm sm:text-base">📅 สรุปรายรับ - รายจ่าย รายเดือน</h2>
-                        <p class="text-xs text-slate-400">เลือกเดือนเพื่อดูสรุปยอดรายรับ รายจ่าย และสัดส่วนค่าใช้จ่ายประจำเดือน</p>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <label class="text-xs text-slate-500 font-medium">เลือกเดือน:</label>
-                        <select id="monthFilter" onchange="renderMonthlySummary()" class="border border-slate-200 rounded-xl px-3 py-1.5 text-xs bg-white font-semibold text-slate-700 outline-none"></select>
-                    </div>
-                </div>
-
-                <!-- Monthly Stat Cards -->
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div class="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-100">
-                        <div class="text-xs text-emerald-700 font-medium">📥 รายรับรวมเดือนที่เลือก</div>
-                        <div id="monthlyIncomeText" class="text-xl font-extrabold text-emerald-600 mt-1">฿0.00</div>
-                    </div>
-                    <div class="p-4 rounded-2xl bg-rose-50/70 border border-rose-100">
-                        <div class="text-xs text-rose-700 font-medium">📤 รายจ่ายรวมเดือนที่เลือก</div>
-                        <div id="monthlyExpenseText" class="text-xl font-extrabold text-rose-600 mt-1">฿0.00</div>
-                    </div>
-                    <div class="p-4 rounded-2xl bg-blue-50/70 border border-blue-100">
-                        <div class="text-xs text-blue-700 font-medium">⚖️ คงเหลือสุทธิ (รายรับ - รายจ่าย)</div>
-                        <div id="monthlyNetText" class="text-xl font-extrabold text-blue-600 mt-1">฿0.00</div>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-center pt-2">
-                    <!-- Monthly Breakdown Table -->
-                    <div class="overflow-x-auto border border-slate-100 rounded-2xl">
-                        <table class="w-full text-left text-xs">
-                            <thead>
-                                <tr class="bg-slate-50 text-slate-500 border-b border-slate-100">
-                                    <th class="py-2.5 px-3">เดือน/ปี</th>
-                                    <th class="py-2.5 px-3 text-right text-emerald-600">รายรับ</th>
-                                    <th class="py-2.5 px-3 text-right text-rose-600">รายจ่าย</th>
-                                    <th class="py-2.5 px-3 text-right">คงเหลือสุทธิ</th>
-                                </tr>
-                            </thead>
-                            <tbody id="monthlyTableBody" class="divide-y divide-slate-100"></tbody>
-                        </table>
-                    </div>
-                    <!-- Expense Chart -->
-                    <div class="h-52 relative flex flex-col items-center justify-center">
-                        <div class="text-xs font-semibold text-slate-500 mb-2">📊 สัดส่วนรายจ่ายตามหมวดหมู่</div>
-                        <div class="w-full h-44 relative">
-                            <canvas id="expenseChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 6. TRANSACTIONS TABLE (เรียงตามวันที่) -->
+            <!-- TRANSACTIONS -->
             <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 space-y-4">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                     <div>
                         <h2 class="font-bold text-slate-800 text-sm sm:text-base">📜 ประวัติรายการเคลื่อนไหว (เรียงตามวันที่)</h2>
-                        <p class="text-xs text-slate-400">แสดงรายการรับ-จ่ายเรียงตามวันที่ทำรายการ สามารถกดแก้ไขหรือลบได้</p>
+                        <p class="text-xs text-slate-400">แสดงรายการรับ-จ่ายเรียงตามวันที่ทำรายการ สามารถแก้ไขหรือลบได้</p>
                     </div>
                     <div class="flex items-center gap-2 w-full sm:w-auto">
-                        <button onclick="toggleTxSortOrder()" id="btnSortDate" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-medium whitespace-nowrap cursor-pointer">📅 เรียง: ล่าสุด ⬇</button>
-                        <input type="text" id="searchInput" oninput="renderTable()" placeholder="🔍 ค้นหารายการ..." class="border border-slate-200 rounded-xl px-3 py-1.5 text-xs w-full sm:w-56 outline-none">
+                        <button onclick="toggleTxSortOrder()" id="btnSortDate" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-medium cursor-pointer">📅 เรียง: ล่าสุด ⬇</button>
+                        <input type="text" id="searchInput" oninput="renderTable()" placeholder="🔍 ค้นหารายการ..." class="border border-slate-200 rounded-xl px-3.5 py-1.5 text-xs w-full sm:w-56 outline-none">
                     </div>
                 </div>
                 <div class="overflow-x-auto">
@@ -198,7 +166,7 @@
                         <thead>
                             <tr class="border-b border-slate-100 text-slate-400">
                                 <th class="py-2.5 px-2">วันที่</th>
-                                <th class="py-2.5 px-2">รายการ / หมวดหมู่</th>
+                                <th class="py-2.5 px-2">รายการ</th>
                                 <th class="py-2.5 px-2">บัญชี / บัตร</th>
                                 <th class="py-2.5 px-2 text-right">จำนวนเงิน</th>
                                 <th class="py-2.5 px-2 text-center">จัดการ</th>
@@ -211,7 +179,7 @@
         </main>
     </div>
 
-    <!-- MODAL 1: ACCOUNT / CREDIT CARD (เพิ่มบัตรไม่ต้องใส่ยอดต้องจ่าย) -->
+    <!-- MODAL 1: ACCOUNT (แชร์กลุ่มวงเงินร่วม) -->
     <div id="accountModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
         <div class="bg-white rounded-2xl p-6 w-full max-w-md space-y-4 shadow-2xl">
             <h3 id="accountModalTitle" class="text-lg font-bold text-slate-800">จัดการบัญชี / บัตร</h3>
@@ -226,21 +194,24 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs text-slate-500 mb-1">ชื่อบัญชี / ชื่อบัตร หรือ PayLater</label>
-                    <input type="text" id="accName" required placeholder="เช่น กสิกรไทย, บัตร KTC, SPayLater" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm">
+                    <label class="block text-xs text-slate-500 mb-1">ชื่อบัญชี / ชื่อบัตร</label>
+                    <input type="text" id="accName" required placeholder="เช่น กสิกรไทย, KTC Visa, KTC JCB" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm">
                 </div>
-                <!-- ช่องยอดเงินคงเหลือ (ซ่อนอัตโนมัติเมื่อเพิ่มบัตรเครดิตใหม่ตามข้อ 1) -->
                 <div id="accBalanceGroup">
-                    <label class="block text-xs text-slate-500 mb-1" id="accBalanceLabel">ยอดเงินคงเหลือในบัญชี (บาท)</label>
+                    <label class="block text-xs text-slate-500 mb-1" id="accBalanceLabel">ยอดเงินคงเหลือ (บาท)</label>
                     <input type="number" id="accBalance" step="0.01" value="0" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm font-bold">
                 </div>
                 <div id="ccExtraFields" class="hidden space-y-3 pt-2 border-t border-slate-100">
                     <div class="p-2.5 bg-blue-50 text-blue-700 rounded-xl text-[11px]" id="ccAddNotice">
-                        💡 การเพิ่มบัตรไม่ต้องใส่ยอดเงินที่ต้องจ่ายเริ่มต้น โดยให้ไปบันทึกยอดใช้จ่ายที่ปุ่ม <strong>"📤 บันทึกรายจ่าย / รูดบัตร"</strong> แทน
+                        💡 ไม่ต้องกรอกยอดหนี้เริ่มต้น บันทึกผ่านการใช้งานด่วน "บันทึกรายจ่าย/รูดบัตร" หน้าเว็บได้เลยค่ะ
                     </div>
                     <div>
-                        <label class="block text-xs text-slate-500 mb-1">วงเงินเต็มของบัตร (บาท)</label>
-                        <input type="number" id="accLimit" step="0.01" placeholder="เช่น 50000" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm font-bold">
+                        <label class="block text-xs text-slate-500 mb-1">กลุ่มวงเงินร่วม (ใช้วงเงินรวมร่วมกัน - ถ้ามี)</label>
+                        <input type="text" id="accGroup" placeholder="เช่น KTC, KBANK (ใส่ชื่อเหมือนกันเพื่อแชร์วงเงิน)" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-500 mb-1">วงเงินเต็มของบัตร / วงเงินกลุ่ม (บาท)</label>
+                        <input type="number" id="accLimit" step="0.01" placeholder="เช่น 20000" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm">
                     </div>
                     <div>
                         <label class="block text-xs text-slate-500 mb-1">วันตัดรอบบิล / กำหนดชำระ</label>
@@ -255,7 +226,7 @@
         </div>
     </div>
 
-    <!-- MODAL 2: TRANSACTION (รูดบัตร เลือกจ่ายปลายเดือน หรือ ผ่อนชำระ + ใส่ยอดคงเหลือย้อนหลังได้) -->
+    <!-- MODAL 2: TRANSACTION (ผ่อนชำระ + ยอดคงเหลือย้อนหลัง) -->
     <div id="txModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
         <div class="bg-white rounded-2xl p-6 w-full max-w-md space-y-4 shadow-2xl max-h-[92vh] overflow-y-auto">
             <h3 id="txModalTitle" class="text-lg font-bold text-slate-800">บันทึกรายการ</h3>
@@ -277,19 +248,19 @@
 
                 <div>
                     <label class="block text-xs text-slate-500 mb-1">หมวดหมู่ / ชื่อรายการ</label>
-                    <input type="text" id="txCategory" required placeholder="เช่น ค่าอาหาร, ซื้อ iPhone, ช้อปปิ้ง" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm">
+                    <input type="text" id="txCategory" required placeholder="เช่น ค่าอาหาร, ซื้อ iPhone" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm">
                 </div>
                 <div>
-                    <label class="block text-xs text-slate-500 mb-1" id="txAmountLabel">จำนวนเงิน (บาท)</label>
+                    <label class="block text-xs text-slate-500 mb-1" id="txAmountLabel">จำนวนเงินรวม (บาท)</label>
                     <input type="number" id="txAmount" step="0.01" min="0.01" required oninput="onTxAmountInput()" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm font-bold">
                 </div>
 
-                <!-- 💳 กล่องตัวเลือกเมื่อรูดบัตรเครดิต/PayLater -->
+                <!-- ตัวเลือกเมื่อจ่ายผ่านบัตรเครดิต / PayLater -->
                 <div id="ccInstallmentBox" class="hidden p-3.5 bg-rose-50/70 border border-rose-200 rounded-2xl space-y-3">
-                    <label class="block text-xs font-bold text-rose-800">💳 รูปแบบการชำระของบัตรเครดิต / PayLater</label>
+                    <label class="block text-xs font-bold text-rose-800">💳 รูปแบบการชำระผ่านบัตรเครดิต</label>
                     <div class="grid grid-cols-2 gap-2">
                         <label class="flex items-center p-2 bg-white rounded-xl border border-rose-100 text-xs font-semibold cursor-pointer">
-                            <input type="radio" name="ccMode" value="full" checked onchange="toggleCcInputBox()" class="mr-2 accent-rose-600"> ชำระปลายเดือนครั้งเดียว
+                            <input type="radio" name="ccMode" value="full" checked onchange="toggleCcInputBox()" class="mr-2 accent-rose-600"> ชำระเต็มปลายเดือน
                         </label>
                         <label class="flex items-center p-2 bg-white rounded-xl border border-rose-100 text-xs font-semibold text-rose-700 cursor-pointer">
                             <input type="radio" name="ccMode" value="installment" onchange="toggleCcInputBox()" class="mr-2 accent-rose-600"> ผ่อนชำระรายเดือน
@@ -310,7 +281,7 @@
                         <div>
                             <label class="block text-[11px] font-semibold text-slate-700 mb-0.5">ยอดคงเหลือที่ต้องผ่อนต่อ (บาท)</label>
                             <input type="number" id="ccRemainingAmount" step="0.01" class="w-full border-2 border-amber-300 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 bg-white">
-                            <p class="text-[10px] text-slate-500 mt-0.5">* กรณีบันทึกย้อนหลังและจ่ายไปบางงวดแล้ว ให้แก้ตัวเลขนี้เป็นยอดที่เหลือจริง</p>
+                            <p class="text-[10px] text-slate-500 mt-0.5">* หากจ่ายไปบางงวดแล้ว ให้แก้ตัวเลขนี้เป็นยอดคงเหลือจริง</p>
                         </div>
                     </div>
                 </div>
@@ -327,17 +298,17 @@
         </div>
     </div>
 
-    <!-- MODAL 3: DEBT (แบ่งประเภท บัตรเครดิต/PayLater, บ้าน, รถ, อื่นๆ + ยอดคงเหลือย้อนหลัง) -->
+    <!-- MODAL 3: DEBT (บ้าน, รถ, อื่นๆ) -->
     <div id="debtModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
         <div class="bg-white rounded-2xl p-6 w-full max-w-md space-y-4 shadow-2xl max-h-[92vh] overflow-y-auto">
-            <h3 id="debtModalTitle" class="text-lg font-bold text-slate-800">จัดการหนี้สิน / ผ่อนชำระ</h3>
+            <h3 id="debtModalTitle" class="text-lg font-bold text-slate-800">จัดการหนี้สิน</h3>
             <form onsubmit="submitDebt(event)" class="space-y-3">
                 <input type="hidden" id="debtId">
                 <div>
                     <label class="block text-xs text-slate-500 mb-1">ประเภทหนี้สิน</label>
                     <select id="debtCategorySelect" onchange="toggleDebtCardSelect()" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white font-semibold">
                         <option value="Card">💳 ผ่อนในบัตรเครดิต / PayLater</option>
-                        <option value="Home">🏠 สินเชื่อบ้าน / คอนโด / ที่อยู่อาศัย</option>
+                        <option value="Home">🏠 สินเชื่อบ้าน / คอนโด</option>
                         <option value="Car">🚗 สินเชื่อรถยนต์ / มอเตอร์ไซค์</option>
                         <option value="Personal">🏦 สินเชื่อส่วนบุคคล</option>
                         <option value="Other">📌 หนี้สินอื่นๆ</option>
@@ -348,8 +319,8 @@
                     <select id="debtCardId" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white"></select>
                 </div>
                 <div>
-                    <label class="block text-xs text-slate-500 mb-1">ชื่อรายการหนี้ / สินค้าที่ผ่อน</label>
-                    <input type="text" id="debtName" required placeholder="เช่น ผ่อน iPad, ผ่อนบ้าน, ผ่อนรถยนต์" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm">
+                    <label class="block text-xs text-slate-500 mb-1">ชื่อรายการหนี้ / รายการผ่อน</label>
+                    <input type="text" id="debtName" required placeholder="เช่น ผ่อน iPad, ผ่อนรถยนต์" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm">
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
@@ -361,14 +332,13 @@
                         <input type="number" id="debtRemaining" step="0.01" required class="w-full border-2 border-amber-300 rounded-xl px-3 py-2 text-sm font-bold text-rose-600">
                     </div>
                 </div>
-                <p class="text-[11px] text-slate-400 -mt-1">* หากบันทึกย้อนหลังและจ่ายไปบางงวดแล้ว ให้ใส่เฉพาะยอดที่เหลือในช่อง "ยอดคงเหลือที่ต้องผ่อน"</p>
                 <div>
-                    <label class="block text-xs text-slate-500 mb-1">ค่างวดที่ต้องจ่ายต่อเดือน (บาท)</label>
-                    <input type="number" id="debtInstallment" step="0.01" required class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm font-bold">
+                    <label class="block text-xs text-slate-500 mb-1">ค่างวดต่อเดือน (บาท)</label>
+                    <input type="number" id="debtInstallment" step="0.01" required class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm">
                 </div>
                 <div>
-                    <label class="block text-xs text-slate-500 mb-1">กำหนดชำระทุกวันที่</label>
-                    <input type="text" id="debtDue" placeholder="เช่น ทุกวันที่ 5 ของเดือน" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm">
+                    <label class="block text-xs text-slate-500 mb-1">กำหนดจ่ายประจำเดือน (วันที่)</label>
+                    <input type="text" id="debtDue" placeholder="เช่น ทุกวันที่ 5" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm">
                 </div>
                 <div class="flex justify-end gap-2 pt-2">
                     <button type="button" onclick="closeModal('debtModal')" class="px-4 py-2 text-sm text-slate-500 cursor-pointer">ยกเลิก</button>
@@ -378,7 +348,7 @@
         </div>
     </div>
 
-    <!-- MODAL 4: PAY SINGLE DEBT (จ่ายงวดรายตัว) -->
+    <!-- MODAL 4: PAY SINGLE DEBT -->
     <div id="payDebtModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
         <div class="bg-white rounded-2xl p-6 w-full max-w-md space-y-4 shadow-2xl">
             <h3 id="payDebtTitle" class="text-lg font-bold text-slate-800">💸 ชำระค่างวด</h3>
@@ -394,7 +364,7 @@
                 </div>
                 <div>
                     <label class="block text-xs text-slate-500 mb-1">โน้ตเพิ่มเติม</label>
-                    <input type="text" id="payDebtNote" placeholder="เช่น จ่ายค่างวดเดือนนี้" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm">
+                    <input type="text" id="payDebtNote" placeholder="เช่น จ่ายงวดนี้" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm">
                 </div>
                 <div class="flex justify-end gap-2 pt-2">
                     <button type="button" onclick="closeModal('payDebtModal')" class="px-4 py-2 text-sm text-slate-500 cursor-pointer">ยกเลิก</button>
@@ -404,36 +374,30 @@
         </div>
     </div>
 
-    <!-- MODAL 5: BATCH PAY CARD / PAYLATER (ข้อ 6: จ่ายรวมทุกรายการของบัตรใบนั้น) -->
+    <!-- MODAL 5: BATCH PAY CARD / PAYLATER (ชำระยอดรวมแยกรายกลุ่มวงเงิน) -->
     <div id="batchPayModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
         <div class="bg-white rounded-2xl p-6 w-full max-w-lg space-y-4 shadow-2xl max-h-[92vh] overflow-y-auto">
             <div>
-                <h3 id="batchPayTitle" class="text-lg font-bold text-slate-800">💳 ชำระยอดบัตร / จ่ายงวดรวม</h3>
-                <p class="text-xs text-slate-500">แสดงรายการที่ผ่อนอยู่และยอดรอชำระปลายเดือนของบัตรนี้ สามารถระบุจำนวนเงินที่ชำระจริงในแต่ละรายการได้</p>
+                <h3 id="batchPayTitle" class="text-lg font-bold text-slate-800">💳 จ่ายค่างวด / บิลรวมของบัตร</h3>
+                <p class="text-xs text-slate-500">เลือกชำระยอดรูดเต็มและรายการผ่อนชำระทั้งหมดในกลุ่มวงเงินนี้พร้อมกันในครั้งเดียว</p>
             </div>
             <form onsubmit="submitBatchPayCard(event)" class="space-y-4">
                 <input type="hidden" id="batchPayCardId">
-                
-                <!-- รายการย่อยในบัตร -->
                 <div id="batchPayItemsList" class="space-y-2.5 max-h-72 overflow-y-auto pr-1"></div>
-
-                <!-- สรุปยอดรวม -->
-                <div class="p-3.5 bg-slate-900 text-white rounded-2xl flex justify-between items-center">
+                <div class="p-4 bg-slate-900 text-white rounded-2xl flex justify-between items-center">
                     <div>
-                        <div class="text-[11px] text-slate-400">ยอดต้องชำระรายเดือนรวม: <span id="batchSuggestedTotal">฿0.00</span></div>
-                        <div class="text-xs font-semibold">ยอดรวมที่ชำระจริงในครั้งนี้:</div>
+                        <div class="text-[10px] text-slate-400">ยอดค้างชำระทั้งหมด: <span id="batchSuggestedTotal">฿0.00</span></div>
+                        <div class="text-xs font-semibold">ยอดรวมที่ชำระในครั้งนี้:</div>
                     </div>
-                    <div id="batchActualTotalText" class="text-xl font-extrabold text-emerald-400">฿0.00</div>
+                    <div id="batchActualTotalText" class="text-lg font-extrabold text-emerald-400">฿0.00</div>
                 </div>
-
                 <div>
-                    <label class="block text-xs text-slate-500 mb-1">ตัดเงินจากบัญชีธนาคาร / เงินสด</label>
+                    <label class="block text-xs text-slate-500 mb-1">ตัดเงินจากบัญชีธนาคาร/เงินสด</label>
                     <select id="batchPayBankSelect" required class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white"></select>
                 </div>
-
                 <div class="flex justify-end gap-2 pt-2">
                     <button type="button" onclick="closeModal('batchPayModal')" class="px-4 py-2 text-sm text-slate-500 cursor-pointer">ยกเลิก</button>
-                    <button type="submit" id="btnSubmitBatchPay" class="px-4 py-2 text-sm bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-semibold cursor-pointer">💸 ยืนยันการชำระรวม</button>
+                    <button type="submit" id="btnSubmitBatchPay" class="px-4 py-2 text-sm bg-rose-600 text-white rounded-xl font-medium cursor-pointer">💸 ยืนยันชำระค่างวดรวม</button>
                 </div>
             </form>
         </div>
@@ -447,18 +411,18 @@
                 <input type="hidden" id="invId">
                 <div>
                     <label class="block text-xs text-slate-500 mb-1">ชื่อสินทรัพย์ / กองทุน / หุ้น</label>
-                    <input type="text" id="invName" required placeholder="เช่น SCBS&P500, K-USA, หุ้น PTT, ทองคำ" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm">
+                    <input type="text" id="invName" required class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm">
                 </div>
                 <div>
                     <label class="block text-xs text-slate-500 mb-1">หมวดหมู่</label>
-                    <input type="text" id="invCategory" required placeholder="เช่น กองทุนรวม, หุ้นไทย, คริปโต" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm">
+                    <input type="text" id="invCategory" required placeholder="เช่น กองทุนรวม, หุ้นไทย" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm">
                 </div>
                 <div>
                     <label class="block text-xs text-slate-500 mb-1">ต้นทุนรวมที่ซื้อ (บาท)</label>
                     <input type="number" id="invCost" step="0.01" required class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm">
                 </div>
                 <div>
-                    <label class="block text-xs text-slate-500 mb-1">มูลค่าปัจจุบัน (บาท)</label>
+                    <label class="block text-xs text-slate-500 mb-1">มูลค่าปัจจุบันรวม (บาท)</label>
                     <input type="number" id="invValue" step="0.01" required class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm font-bold text-emerald-600">
                 </div>
                 <div class="flex justify-end gap-2 pt-2">
@@ -472,6 +436,9 @@
     <!-- JAVASCRIPT LOGIC -->
     <script>
         let SCRIPT_URL = localStorage.getItem("WIN_WEALTH_API_URL") || "";
+        let state = { accounts: [], transactions: [], goals: [], debts: [], investments: [] };
+        let expenseChartInstance = null;
+        let txSortDesc = true;
 
         window.addEventListener("DOMContentLoaded", () => {
             if (!SCRIPT_URL) {
@@ -483,30 +450,24 @@
         function saveSetupApi() {
             const urlInput = document.getElementById("setupScriptUrl").value.trim();
             if (!urlInput || !urlInput.startsWith("https://script.google.com")) {
-                alert("กรุณากรอก URL Web App ของคุณให้ถูกต้องขึ้นต้นด้วย https://script.google.com");
+                alert("กรุณากรอกลิงก์ Google Web App ให้ถูกต้องขึ้นต้นด้วย https://script.google.com");
                 return;
             }
             localStorage.setItem("WIN_WEALTH_API_URL", urlInput);
             SCRIPT_URL = urlInput;
-            alert("บันทึก URL เชื่อมต่อสำเร็จแล้วค่ะ!");
+            alert("บันทึก URL เชื่อมโยงระบบคลังข้อมูลเรียบร้อยแล้วค่ะ!");
             location.reload();
         }
 
         function resetSavedApi() {
-            if (confirm("ต้องการเปลี่ยน URL ลิงก์เชื่อมโยง Google Sheets หรือไม่?")) {
+            if (confirm("ต้องการเปลี่ยนลิงก์เชื่อมโยง Google Sheets หรือไม่?")) {
                 localStorage.removeItem("WIN_WEALTH_API_URL");
                 location.reload();
             }
         }
-        let state = { accounts: [], transactions: [], goals: [], debts: [], investments: [] };
-        let expenseChartInstance = null;
-        let txSortDesc = true; // เรียงวันที่ล่าสุดขึ้นก่อนเป็นค่าเริ่มต้น
 
         async function apiCall(payload) {
-            if (!SCRIPT_URL) {
-                alert("ยังไม่ได้ตั้งค่า SCRIPT_URL");
-                return null;
-            }
+            if (!SCRIPT_URL) { alert("ยังไม่ได้ตั้งค่าคีย์ SCRIPT_URL"); return null; }
             try {
                 const res = await fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) });
                 return await res.json();
@@ -524,9 +485,7 @@
                 document.getElementById("loginScreen").classList.add("hidden");
                 document.getElementById("mainScreen").classList.remove("hidden");
                 fetchData();
-            } else {
-                alert(res ? res.message : "PIN ไม่ถูกต้อง!");
-            }
+            } else { alert(res ? res.message : "PIN ล็อกอินไม่ถูกต้อง!"); }
         }
 
         async function fetchData() {
@@ -538,28 +497,14 @@
             }
         }
 
-        function fmt(n) {
-            return Number(n || 0).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        function fmt(n) { 
+            return Number(n || 0).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); 
         }
+        function cleanDateStr(d) { if (!d) return ""; const s = d.toString(); if (s.includes("T")) return s.split("T")[0]; return s; }
+        function openModal(id) { document.getElementById(id).classList.remove("hidden"); document.getElementById(id).classList.add("flex"); }
+        function closeModal(id) { document.getElementById(id).classList.add("hidden"); document.getElementById(id).classList.remove("flex"); }
 
-        function cleanDateStr(d) {
-            if (!d) return "";
-            const s = d.toString();
-            if (s.includes("T")) return s.split("T")[0];
-            return s;
-        }
-
-        function openModal(id) {
-            document.getElementById(id).classList.remove("hidden");
-            document.getElementById(id).classList.add("flex");
-        }
-
-        function closeModal(id) {
-            document.getElementById(id).classList.add("hidden");
-            document.getElementById(id).classList.remove("flex");
-        }
-
-        // ================= Helper: แยกและเก็บข้อมูลหมวดหนี้สินและบัตรใน dueDate โดยไม่ต้องแก้ Sheet =================
+        // --- ระบบแยก Metadata ของหนี้สิน ---
         function packDebtMeta(dueText, category, cardId) {
             const cleanDue = (dueText || "").replace(/\s*@@META:.*$/, "").trim();
             return `${cleanDue} @@META:${category || 'Other'}|${cardId || ''}`;
@@ -570,7 +515,6 @@
             let cleanDue = rawDue;
             let category = "Other";
             let cardId = "";
-
             if (rawDue.includes("@@META:")) {
                 const parts = rawDue.split("@@META:");
                 cleanDue = parts[0].trim();
@@ -578,45 +522,31 @@
                 category = meta[0] || "Other";
                 cardId = meta[1] || "";
             } else {
-                // เดาหมวดหมู่อัตโนมัติจากชื่อรายการสำหรับข้อมูลเก่า
                 const n = (debtObj.name || "").toLowerCase();
                 const matchedCard = state.accounts.find(a => a.type === 'CreditCard' && n.includes(a.name.toLowerCase()));
-                if (matchedCard) {
-                    category = "Card";
-                    cardId = matchedCard.id;
-                } else if (n.includes("บ้าน") || n.includes("คอนโด")) {
-                    category = "Home";
-                } else if (n.includes("รถ") || n.includes("มอเตอร์ไซค์")) {
-                    category = "Car";
-                }
+                if (matchedCard) { category = "Card"; cardId = matchedCard.id; }
+                else if (n.includes("บ้าน") || n.includes("คอนโด")) category = "Home";
+                else if (n.includes("รถ")) category = "Car";
             }
             return { cleanDue, category, cardId };
         }
 
-        // ================= 1. บัญชีธนาคาร & บัตรเครดิต =================
+        // ================= 1. BANK ACCOUNTS & CASH =================
         function toggleAccountModalFields() {
             const isCC = document.getElementById("accType").value === "CreditCard";
             const isEditing = !!document.getElementById("accId").value;
             document.getElementById("ccExtraFields").classList.toggle("hidden", !isCC);
-
-            // ข้อ 1: เมนูเพิ่มบัตรเครดิตใหม่ ไม่ต้องใส่จำนวนเงินที่ต้องจ่ายในบัตร
             if (isCC && !isEditing) {
                 document.getElementById("accBalanceGroup").classList.add("hidden");
                 document.getElementById("accBalance").value = "0";
-                document.getElementById("ccAddNotice").classList.remove("hidden");
             } else {
                 document.getElementById("accBalanceGroup").classList.remove("hidden");
-                document.getElementById("ccAddNotice").classList.add("hidden");
-                document.getElementById("accBalanceLabel").textContent = isCC
-                    ? "ยอดรอชำระปลายเดือนปัจจุบัน (บาท)"
-                    : "ยอดเงินคงเหลือในบัญชี (บาท)";
+                document.getElementById("accBalanceLabel").textContent = isCC ? "ยอดค้างชำระปลายเดือนปัจจุบัน (บาท)" : "ยอดเงินคงเหลือในบัญชี (บาท)";
             }
         }
 
         function openAddAccountModal(defaultType = "Bank") {
-            document.getElementById("accountModalTitle").textContent = defaultType === "CreditCard"
-                ? "+ เพิ่มบัตรเครดิต / PayLater"
-                : "+ เพิ่มบัญชีธนาคาร / เงินสด";
+            document.getElementById("accountModalTitle").textContent = defaultType === "CreditCard" ? "+ เพิ่มบัตรเครดิต / PayLater" : "+ เพิ่มบัญชีธนาคาร / เงินสด";
             document.getElementById("accId").value = "";
             document.getElementById("accType").value = defaultType;
             document.getElementById("accName").value = "";
@@ -637,6 +567,8 @@
             document.getElementById("accBalance").value = Math.abs(Number(acc.balance || 0));
             document.getElementById("accLimit").value = acc.limit || "";
             document.getElementById("accDue").value = acc.due || "";
+            // ค้นหากลุ่มวงเงินร่วมจากรหัสผ่านในฟิลด์หรือตั้งชื่อ
+            document.getElementById("accGroup").value = acc.due && acc.due.includes("@@GROUP:") ? acc.due.split("@@GROUP:")[1] : "";
             toggleAccountModalFields();
             openModal('accountModal');
         }
@@ -646,25 +578,27 @@
             const id = document.getElementById("accId").value;
             const type = document.getElementById("accType").value;
             const rawBal = Number(document.getElementById("accBalance").value || 0);
-            // สำหรับบัตรเครดิต เก็บค่าเป็นติดลบเพื่อให้สอดคล้องกับฟังก์ชัน Expense ใน Code.gs
             const finalBalance = type === "CreditCard" ? -Math.abs(rawBal) : rawBal;
+            
+            const groupName = document.getElementById("accGroup") ? document.getElementById("accGroup").value.trim() : "";
+            const rawDue = document.getElementById("accDue").value.trim();
+            // เก็บชื่อกลุ่มแชร์วงเงินร่วมไว้ท้ายฟิลด์ due
+            const finalDue = groupName ? `${rawDue} @@GROUP:${groupName}` : rawDue;
 
             const payload = {
                 action: id ? "updateAccount" : "addAccount",
                 data: {
                     id: id || ("ACC-" + Date.now()),
                     name: document.getElementById("accName").value.trim(),
-                    type: type,
+                    type,
                     balance: id ? finalBalance : (type === "CreditCard" ? 0 : rawBal),
                     limit: document.getElementById("accLimit").value,
-                    due: document.getElementById("accDue").value.trim()
+                    due: finalDue
                 }
             };
             const res = await apiCall(payload);
-            if (res && res.status === "success") {
-                closeModal('accountModal');
-                fetchData();
-            } else alert(res ? res.message : "เกิดข้อผิดพลาด");
+            if (res && res.status === "success") { closeModal('accountModal'); fetchData(); }
+            else alert(res ? res.message : "เกิดข้อผิดพลาด");
         }
 
         async function deleteAccount(id, name) {
@@ -674,7 +608,16 @@
             else alert(res ? res.message : "เกิดข้อผิดพลาด");
         }
 
-        // ================= 2. รายการเคลื่อนไหว & รูดบัตร (ปลายเดือน vs ผ่อนชำระ) =================
+        function openPayCardBillModal(cardId, cardName, spent) {
+            openTxModal('Transfer');
+            document.getElementById("txModalTitle").textContent = `💳 จ่ายบิลบัตร: ${cardName}`;
+            document.getElementById("txAccount").value = state.accounts.find(a => a.type !== 'CreditCard')?.id || "";
+            document.getElementById("txTargetAccount").value = cardId;
+            document.getElementById("txCategory").value = `จ่ายบิลบัตร: ${cardName}`;
+            document.getElementById("txAmount").value = spent;
+        }
+
+        // --- แยกฟังก์ชันผ่อนชำระบัตรเครดิต ---
         function onTxAccountChange() {
             const accId = document.getElementById("txAccount").value;
             const acc = state.accounts.find(a => a.id === accId);
@@ -690,9 +633,7 @@
             const mode = Array.from(document.getElementsByName("ccMode")).find(r => r.checked)?.value;
             const showFields = isVisible && mode === 'installment';
             document.getElementById("ccInstallmentFields").classList.toggle("hidden", !showFields);
-            document.getElementById("txAmountLabel").textContent = showFields
-                ? "ยอดรูดผ่อนเต็มจำนวน (บาท)"
-                : "จำนวนเงิน (บาท)";
+            document.getElementById("txAmountLabel").textContent = showFields ? "ยอดรูดผ่อนเต็มจำนวน (บาท)" : "จำนวนเงิน (บาท)";
             calcCcInstallment();
         }
 
@@ -708,6 +649,7 @@
             document.getElementById("ccMonthlyPay").value = total > 0 ? (total / months).toFixed(2) : "";
         }
 
+        // --- บันทึกรายการเคลื่อนไหว ---
         function openTxModal(type) {
             const titles = {
                 'Income': '📥 บันทึกรายรับ',
@@ -746,12 +688,11 @@
             const acc = state.accounts.find(a => a.id === accId);
             const txType = document.getElementById("txType").value;
             const amount = Number(document.getElementById("txAmount").value || 0);
-            const category = document.getElementById("txCategory").value.trim();
+            const category = document.getElementById("txCategory").value;
             const date = document.getElementById("txDate").value;
-            const note = document.getElementById("txNote").value.trim();
+            const note = document.getElementById("txNote").value;
             const ccMode = Array.from(document.getElementsByName("ccMode")).find(r => r.checked)?.value || "full";
 
-            // กรณีรูดบัตรแบบ "ผ่อนชำระ" -> บันทึกเข้าหมวดหนี้สินของบัตรนั้น พร้อมรองรับยอดคงเหลือย้อนหลัง (ข้อ 2)
             if (!id && txType === 'Expense' && acc && acc.type === 'CreditCard' && ccMode === 'installment') {
                 const months = Number(document.getElementById("ccMonths").value || 10);
                 const monthlyPay = Number(document.getElementById("ccMonthlyPay").value || (amount / months));
@@ -766,15 +707,13 @@
                     dueDate: packDebtMeta(acc.due || `ผ่อน ${months} งวด`, "Card", acc.id)
                 };
 
-                const res = await apiCall({ action: "addDebt", data: newDebt });
-                if (res && res.status === "success") {
-                    closeModal('txModal');
-                    fetchData();
-                } else alert(res ? res.message : "เกิดข้อผิดพลาด");
+                await apiCall({ action: "addDebt", data: newDebt });
+                closeModal('txModal');
+                fetchData();
+                alert("เพิ่มรายการรูดผ่อนในหมวดหนี้สิน & ค่างวด เรียบร้อยแล้วค่ะ!");
                 return;
             }
 
-            // รายการรับ / จ่ายปกติ / จ่ายเต็มปลายเดือน
             const payload = {
                 action: id ? "updateTransaction" : "addTransaction",
                 data: {
@@ -785,16 +724,12 @@
                     targetAccountId: document.getElementById("txTargetAccount").value,
                     category,
                     amount,
-                    note: (txType === 'Expense' && acc && acc.type === 'CreditCard' && !id)
-                        ? `${note ? note + ' ' : ''}[ชำระปลายเดือน]`
-                        : note
+                    note: (txType === 'Expense' && acc && acc.type === 'CreditCard' && !id) ? `${note ? note + ' ' : ''}[ชำระปลายเดือน]` : note
                 }
             };
             const res = await apiCall(payload);
-            if (res && res.status === "success") {
-                closeModal('txModal');
-                fetchData();
-            } else alert(res ? res.message : "เกิดข้อผิดพลาด");
+            if (res && res.status === "success") { closeModal('txModal'); fetchData(); }
+            else alert(res ? res.message : "เกิดข้อผิดพลาด");
         }
 
         function openEditTxModal(txId) {
@@ -824,25 +759,12 @@
             else alert(res ? res.message : "เกิดข้อผิดพลาด");
         }
 
-        // ================= 3. จัดการหนี้สิน (แยกบัตร, บ้าน, รถ, อื่นๆ) =================
-        function toggleDebtCardSelect() {
-            const cat = document.getElementById("debtCategorySelect").value;
-            document.getElementById("debtCardSelectDiv").classList.toggle("hidden", cat !== "Card");
-        }
-
-        function populateDebtCardOptions(selectedCardId = "") {
-            const cards = state.accounts.filter(a => a.type === 'CreditCard');
-            const sel = document.getElementById("debtCardId");
-            sel.innerHTML = cards.length
-                ? cards.map(c => `<option value="${c.id}" ${c.id === selectedCardId ? 'selected' : ''}>💳 ${c.name}</option>`).join("")
-                : `<option value="">-- ยังไม่มีบัตรเครดิต/PayLater --</option>`;
-        }
-
-        function openAddDebtModal(defaultCat = "Card", defaultCardId = "") {
-            document.getElementById("debtModalTitle").textContent = "+ เพิ่มรายการหนี้สิน / ผ่อนชำระ";
+        // --- จัดการหนี้สิน ---
+        function openAddDebtModal() {
+            document.getElementById("debtModalTitle").textContent = "+ เพิ่มรายการหนี้สิน";
             document.getElementById("debtId").value = "";
-            document.getElementById("debtCategorySelect").value = defaultCat;
-            populateDebtCardOptions(defaultCardId);
+            document.getElementById("debtCategorySelect").value = "Card";
+            populateDebtCardOptions("");
             toggleDebtCardSelect();
             document.getElementById("debtName").value = "";
             document.getElementById("debtTotal").value = "";
@@ -888,10 +810,8 @@
                 }
             };
             const res = await apiCall(payload);
-            if (res && res.status === "success") {
-                closeModal('debtModal');
-                fetchData();
-            } else alert(res ? res.message : "เกิดข้อผิดพลาด");
+            if (res && res.status === "success") { closeModal('debtModal'); fetchData(); }
+            else alert(res ? res.message : "เกิดข้อผิดพลาด");
         }
 
         async function deleteDebt(id, name) {
@@ -901,7 +821,6 @@
             else alert(res ? res.message : "เกิดข้อผิดพลาด");
         }
 
-        // จ่ายงวดรายตัว (สำหรับบ้าน / รถ / อื่นๆ หรือจ่ายแยกตัว)
         function openPayDebtModal(debtId) {
             const d = state.debts.find(item => item.id === debtId);
             if (!d) return;
@@ -929,7 +848,7 @@
             } else alert(res ? res.message : "เกิดข้อผิดพลาด");
         }
 
-        // ================= ข้อ 6: ปุ่มกดจ่ายงวดรวมของแต่ละบัตรเครดิต / PayLater =================
+        // --- จ่ายงวดรวมประจำบัตรเครดิต ---
         function openBatchPayCardModal(cardId) {
             const card = state.accounts.find(a => a.id === cardId);
             if (!card) return;
@@ -944,25 +863,23 @@
             });
 
             let html = "";
-            // 1. ยอดจ่ายเต็มปลายเดือนของบัตรนี้ (ถ้ามี)
             if (fullPayOwed > 0) {
                 html += `
-                    <div class="p-3 bg-amber-50/70 border border-amber-200 rounded-xl space-y-2">
+                    <div class="p-3.5 bg-amber-50/70 border border-amber-200 rounded-xl space-y-2">
                         <div class="flex justify-between items-center text-xs">
                             <label class="font-bold text-amber-900 flex items-center gap-1.5 cursor-pointer">
                                 <input type="checkbox" id="chkFullPay" checked onchange="recalcBatchTotal()" class="accent-rose-600">
-                                <span>ยอดรูดจ่ายเต็มปลายเดือน</span>
+                                <span>ยอดจ่ายรอบบิลปลายเดือน</span>
                             </label>
                             <span class="text-slate-500">ค้างชำระ: <strong class="text-rose-600">฿${fmt(fullPayOwed)}</strong></span>
                         </div>
                         <div class="flex items-center justify-between gap-2">
-                            <span class="text-[11px] text-slate-500">จำนวนเงินที่ชำระจริง (บาท):</span>
+                            <span class="text-[11px] text-slate-500 font-medium">ยอดเงินชำระจริง (บาท):</span>
                             <input type="number" id="inputFullPayAmt" step="0.01" min="0" value="${fullPayOwed.toFixed(2)}" oninput="recalcBatchTotal()" class="w-36 border border-amber-300 rounded-lg px-2.5 py-1 text-xs font-bold text-right bg-white">
                         </div>
                     </div>`;
             }
 
-            // 2. รายการที่ผ่อนอยู่ในบัตรนี้ทั้งหมด
             cardDebts.forEach(d => {
                 const rem = Number(d.remainingAmount || 0);
                 const stdMonth = Math.min(Number(d.installmentAmount || 0), rem);
@@ -973,20 +890,16 @@
                                 <input type="checkbox" class="chk-batch-debt accent-rose-600" data-id="${d.id}" checked onchange="recalcBatchTotal()">
                                 <span>ผ่อน: ${d.name}</span>
                             </label>
-                            <span class="text-[11px] text-slate-500">เหลือ: ฿${fmt(rem)} | งวดละ: <strong class="text-slate-700">฿${fmt(stdMonth)}</strong></span>
+                            <span class="text-[11px] text-slate-500">คงเหลือ: ฿${fmt(rem)} | ค่างวด: ฿${fmt(stdMonth)}</span>
                         </div>
                         <div class="flex items-center justify-between gap-2">
-                            <span class="text-[11px] text-slate-500">จำนวนที่ชำระจริงงวดนี้ (บาท):</span>
-                            <input type="number" id="batchDebtAmt_${d.id}" data-suggested="${stdMonth}" step="0.01" min="0" value="${stdMonth.toFixed(2)}" oninput="recalcBatchTotal()" class="w-36 border border-slate-300 rounded-lg px-2.5 py-1 text-xs font-bold text-rose-600 text-right bg-white">
+                            <span class="text-[11px] text-slate-500">ชำระค่างวดจริงงวดนี้ (บาท):</span>
+                            <input type="number" id="batchDebtAmt_" + d.id}" data-suggested="${stdMonth}" step="0.01" min="0" value="${stdMonth.toFixed(2)}" oninput="recalcBatchTotal()" class="w-36 border border-slate-300 rounded-lg px-2.5 py-1 text-xs font-bold text-rose-600 text-right bg-white">
                         </div>
                     </div>`;
             });
 
-            if (!html) {
-                html = `<div class="p-6 text-center text-xs text-slate-400 bg-slate-50 rounded-xl">ไม่มีรายการค้างชำระหรือรายการผ่อนในบัตรนี้</div>`;
-            }
-
-            document.getElementById("batchPayItemsList").innerHTML = html;
+            document.getElementById("batchPayItemsList").innerHTML = html || `<div class="p-6 text-center text-xs text-slate-400 bg-slate-50 rounded-xl">ไม่มีรายการค้างชำระในบัตรเครดิตกลุ่มนี้</div>`;
 
             const bankAccs = state.accounts.filter(a => a.type !== 'CreditCard');
             document.getElementById("batchPayBankSelect").innerHTML = bankAccs.map(acc => `<option value="${acc.id}">🏦 ${acc.name} (คงเหลือ: ฿${fmt(acc.balance)})</option>`).join("");
@@ -996,30 +909,21 @@
         }
 
         function recalcBatchTotal() {
-            let suggested = 0;
-            let actual = 0;
-
+            let suggested = 0, actual = 0;
             const chkFull = document.getElementById("chkFullPay");
             const inpFull = document.getElementById("inputFullPayAmt");
-            if (chkFull && inpFull) {
-                if (chkFull.checked) {
-                    const v = Number(inpFull.value || 0);
-                    suggested += v;
-                    actual += v;
-                }
+            if (chkFull && chkFull.checked && inpFull) {
+                const v = Number(inpFull.value || 0);
+                suggested += v; actual += v;
             }
-
             document.querySelectorAll(".chk-batch-debt").forEach(chk => {
                 const id = chk.getAttribute("data-id");
                 const inp = document.getElementById("batchDebtAmt_" + id);
                 if (inp) {
                     suggested += Number(inp.getAttribute("data-suggested") || 0);
-                    if (chk.checked) {
-                        actual += Number(inp.value || 0);
-                    }
+                    if (chk.checked) actual += Number(inp.value || 0);
                 }
             });
-
             document.getElementById("batchSuggestedTotal").textContent = `฿${fmt(suggested)}`;
             document.getElementById("batchActualTotalText").textContent = `฿${fmt(actual)}`;
         }
@@ -1036,30 +940,27 @@
             btn.textContent = "กำลังบันทึกการชำระ...";
 
             try {
-                // 1. ชำระยอดจ่ายเต็มปลายเดือน (ถ้าติ๊กเลือก)
                 const chkFull = document.getElementById("chkFullPay");
                 const inpFull = document.getElementById("inputFullPayAmt");
                 if (chkFull && chkFull.checked && inpFull) {
-                    const payFullAmt = Number(inpFull.value || 0);
-                    if (payFullAmt > 0) {
-                        const today = new Date().toISOString().split("T")[0];
+                    const payAmt = Number(inpFull.value || 0);
+                    if (payAmt > 0) {
                         await apiCall({
                             action: "addTransaction",
                             data: {
                                 id: "TX-" + Date.now(),
-                                date: today,
+                                date: new Date().toISOString().split("T")[0],
                                 type: "Transfer",
                                 accountId: bankId,
                                 targetAccountId: card.id,
                                 category: `ชำระบิลปลายเดือน: ${card.name}`,
-                                amount: payFullAmt,
-                                note: "ชำระยอดใช้จ่ายปลายเดือน"
+                                amount: payAmt,
+                                note: "ชำระบิลรายเดือนผ่านการตัดเงินร่วม"
                             }
                         });
                     }
                 }
 
-                // 2. ชำระค่างวดรายการที่ผ่อนอยู่ในบัตรนี้ทีละรายการตามยอดจ่ายจริง
                 const debtChecks = Array.from(document.querySelectorAll(".chk-batch-debt"));
                 for (let chk of debtChecks) {
                     if (chk.checked) {
@@ -1067,24 +968,15 @@
                         const inp = document.getElementById("batchDebtAmt_" + debtId);
                         const payAmt = Number(inp ? inp.value : 0);
                         if (payAmt > 0) {
-                            await apiCall({
-                                action: "payDebt",
-                                data: {
-                                    debtId: debtId,
-                                    accountId: bankId,
-                                    amount: payAmt,
-                                    note: `ชำระงวดบัตร ${card.name}`
-                                }
-                            });
+                            await apiCall({ action: "payDebt", data: { debtId, accountId: bankId, amount: payAmt, note: `ชำระงวดรวมผ่านกลุ่ม ${card.name}` } });
                         }
                     }
                 }
-
                 closeModal('batchPayModal');
-                await fetchData();
+                fetchData();
             } finally {
                 btn.disabled = false;
-                btn.textContent = "💸 ยืนยันการชำระรวม";
+                btn.textContent = "💸 ยืนยันชำระค่างวดรวม";
             }
         }
 
@@ -1125,10 +1017,8 @@
                 }
             };
             const res = await apiCall(payload);
-            if (res && res.status === "success") {
-                closeModal('invModal');
-                fetchData();
-            } else alert(res ? res.message : "เกิดข้อผิดพลาด");
+            if (res && res.status === "success") { closeModal('invModal'); fetchData(); }
+            else alert(res ? res.message : "เกิดข้อผิดพลาด");
         }
 
         async function deleteInvestment(id, name) {
@@ -1138,38 +1028,25 @@
             else alert(res ? res.message : "เกิดข้อผิดพลาด");
         }
 
-        // ================= 5. สรุปรายรับ-รายจ่าย รายเดือน (ข้อ 5) =================
+        // ================= 5. สรุปรายเดือน & เรียงตามวันที่ =================
         function populateMonthFilter() {
             const monthsSet = new Set();
-            const nowMonth = new Date().toISOString().slice(0, 7);
-            monthsSet.add(nowMonth);
-
+            monthsSet.add(new Date().toISOString().slice(0, 7));
             state.transactions.forEach(t => {
                 const d = cleanDateStr(t.date);
                 if (d && d.length >= 7) monthsSet.add(d.slice(0, 7));
             });
-
             const sortedMonths = Array.from(monthsSet).sort().reverse();
-            const sel = document.getElementById("monthFilter");
-            const currentVal = sel.value;
-
-            sel.innerHTML = `<option value="ALL">📊 รวมทุกเดือนทั้งหมด</option>` +
+            document.getElementById("monthFilter").innerHTML = `<option value="ALL">📊 รวมทุกเดือน</option>` +
                 sortedMonths.map(m => `<option value="${m}">📅 เดือน ${m}</option>`).join("");
-
-            if (currentVal && (currentVal === "ALL" || sortedMonths.includes(currentVal))) {
-                sel.value = currentVal;
-            } else {
-                sel.value = sortedMonths[0] || "ALL";
-            }
         }
 
         function renderMonthlySummary() {
             const selectedMonth = document.getElementById("monthFilter").value || "ALL";
             const monthMap = {};
-
             state.transactions.forEach(t => {
                 const d = cleanDateStr(t.date);
-                const m = (d && d.length >= 7) ? d.slice(0, 7) : "ไม่ระบุ";
+                const m = d && d.length >= 7 ? d.slice(0, 7) : "ไม่ระบุ";
                 if (!monthMap[m]) monthMap[m] = { income: 0, expense: 0 };
                 const amt = Number(t.amount || 0);
                 if (t.type === "Income") monthMap[m].income += amt;
@@ -1189,33 +1066,36 @@
             document.getElementById("monthlyExpenseText").textContent = `฿${fmt(selExp)}`;
             const netEl = document.getElementById("monthlyNetText");
             netEl.textContent = `${selNet >= 0 ? '+' : ''}฿${fmt(selNet)}`;
-            netEl.className = `text-xl font-extrabold mt-1 ${selNet >= 0 ? 'text-blue-600' : 'text-rose-600'}`;
+            netEl.className = `text-lg font-extrabold mt-1 ${selNet >= 0 ? 'text-blue-600' : 'text-rose-600'}`;
 
-            // ตารางเปรียบเทียบรายเดือน
             const sortedKeys = Object.keys(monthMap).sort().reverse();
             document.getElementById("monthlyTableBody").innerHTML = sortedKeys.map(m => {
-                const inc = monthMap[m].income;
-                const exp = monthMap[m].expense;
-                const net = inc - exp;
+                const inc = monthMap[m].income; const exp = monthMap[m].expense; const net = inc - exp;
                 return `
-                    <tr class="hover:bg-slate-50 cursor-pointer ${m === selectedMonth ? 'bg-blue-50/50 font-semibold' : ''}" onclick="document.getElementById('monthFilter').value='${m}'; renderMonthlySummary();">
-                        <td class="py-2.5 px-3 text-slate-700">${m}</td>
-                        <td class="py-2.5 px-3 text-right text-emerald-600">+฿${fmt(inc)}</td>
-                        <td class="py-2.5 px-3 text-right text-rose-600">-฿${fmt(exp)}</td>
-                        <td class="py-2.5 px-3 text-right font-bold ${net >= 0 ? 'text-blue-600' : 'text-rose-600'}">${net >= 0 ? '+' : ''}฿${fmt(net)}</td>
+                    <tr class="hover:bg-slate-50 cursor-pointer ${m === selectedMonth ? 'bg-blue-50/50 font-bold' : ''}" onclick="document.getElementById('monthFilter').value='${m}'; renderMonthlySummary();">
+                        <td class="py-2 px-3">${m}</td>
+                        <td class="py-2 px-3 text-right text-emerald-600">+฿${fmt(inc)}</td>
+                        <td class="py-2 px-3 text-right text-rose-600">-฿${fmt(exp)}</td>
+                        <td class="py-2 px-3 text-right font-bold ${net >= 0 ? 'text-blue-600' : 'text-rose-600'}">${net >= 0 ? '+' : ''}฿${fmt(net)}</td>
                     </tr>`;
-            }).join("") || `<tr><td colspan="4" class="text-center py-4 text-slate-400">ยังไม่มีข้อมูลรายเดือน</td></tr>`;
+            }).join("");
 
             renderChart(selectedMonth);
         }
 
-        // ================= RENDER DASHBOARD =================
+        function toggleTxSortOrder() {
+            txSortDesc = !txSortDesc;
+            document.getElementById("btnSortDate").textContent = txSortDesc ? "📅 เรียง: ล่าสุด ⬇" : "📅 เรียง: เก่าสุด ⬆";
+            renderTable();
+        }
+
+        // --- ฟังก์ชันหลักในการแสดงผลภาพรวมแดชบอร์ด (แบบกลุ่มแชร์วงเงินร่วมใบใหญ่) ---
         function renderDashboard() {
             let totalBankAssets = 0, totalInvAssets = 0, totalCreditAll = 0, totalOtherDebts = 0;
             const bankAccounts = state.accounts.filter(a => a.type !== 'CreditCard');
             const creditCards = state.accounts.filter(a => a.type === 'CreditCard');
 
-            // คำนวณยอดผ่อนชำระที่ผูกกับแต่ละบัตรเครดิต/PayLater
+            // เก็บรายการผ่อนชำระแยกกลุ่มบัตร
             const cardInstallmentRemainingMap = {};
             const cardInstallmentMonthlyMap = {};
             const cardDebtsListMap = {};
@@ -1226,11 +1106,9 @@
                 const monthly = Number(d.installmentAmount || 0);
                 if (meta.category === "Card" && meta.cardId) {
                     cardInstallmentRemainingMap[meta.cardId] = (cardInstallmentRemainingMap[meta.cardId] || 0) + rem;
-                    if (rem > 0) {
-                        cardInstallmentMonthlyMap[meta.cardId] = (cardInstallmentMonthlyMap[meta.cardId] || 0) + Math.min(monthly, rem);
-                    }
+                    if (rem > 0) cardInstallmentMonthlyMap[meta.cardId] = (cardInstallmentMonthlyMap[meta.cardId] || 0) + Math.min(monthly, rem);
                     if (!cardDebtsListMap[meta.cardId]) cardDebtsListMap[meta.cardId] = [];
-                    cardDebtsListMap[meta.cardId].push({ ...d, meta });
+                    cardDebtsListMap[meta.cardId].push(d);
                 } else {
                     totalOtherDebts += rem;
                 }
@@ -1238,122 +1116,190 @@
 
             // 1. แสดงบัญชีธนาคาร & เงินสด
             document.getElementById("bankAccountsContainer").innerHTML = bankAccounts.map(a => {
-                const bal = Number(a.balance || 0);
-                totalBankAssets += bal;
+                const bal = Number(a.balance || 0); totalBankAssets += bal;
                 return `
-                    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 flex flex-col justify-between space-y-2">
-                        <div class="flex justify-between items-start text-xs">
+                    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 flex flex-col justify-between">
+                        <div class="flex justify-between items-start text-xs text-slate-400">
                             <span class="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md font-semibold">${a.type === 'Cash' ? '💵 เงินสด' : '🏦 ธนาคาร'}</span>
                             <div class="flex gap-1">
                                 <button onclick="openEditAccountModal('${a.id}')" class="text-blue-600 px-1 text-xs cursor-pointer">✏️</button>
-                                <button onclick="deleteAccount('${a.id}', '${a.name}')" class="text-slate-400 hover:text-rose-600 px-1 text-xs cursor-pointer">🗑️</button>
+                                <button onclick="deleteAccount('${a.id}', '${a.name}')" class="text-slate-400 px-1 text-xs cursor-pointer">🗑️</button>
                             </div>
                         </div>
-                        <div class="font-bold text-slate-800 text-sm">${a.name}</div>
+                        <div class="font-bold text-slate-800 text-sm mt-2">${a.name}</div>
                         <div class="text-xl font-extrabold text-emerald-600">฿${fmt(bal)}</div>
                     </div>`;
-            }).join("") || '<p class="text-xs text-slate-400 col-span-full">ยังไม่มีบัญชีธนาคาร</p>';
+            }).join("") || '<p class="text-xs text-slate-400 col-span-full">ไม่มีบัญชีเงินสด/เงินฝาก</p>';
 
-            // 2. แสดงบัตรเครดิต & PayLater (ข้อ 1 & ข้อ 6: รวมยอดจ่ายปลายเดือน + ยอดผ่อนชำระ และแสดงวงเงินเต็ม + คงเหลือ)
-            document.getElementById("creditCardsContainer").innerHTML = creditCards.map(a => {
+            // 2. แผนจัดโครงสร้างกลุ่มวงเงินร่วมบัตรเครดิต ( Shared Credit Limits )
+            const groupMap = {};
+            const unassignedCards = [];
+
+            creditCards.forEach(c => {
+                const groupName = c.due && c.due.includes("@@GROUP:") ? c.due.split("@@GROUP:")[1].trim() : "";
+                if (groupName) {
+                    if (!groupMap[groupName]) groupMap[groupName] = { name: groupName, limit: 0, cards: [] };
+                    groupMap[groupName].cards.push(c);
+                    // ใช้วงเงินสูงสุดในกลุ่มเป็นวงเงินของทั้งกลุ่ม (หรือบวกกันถ้าแชร์วงเงินแบบเพิ่ม)
+                    groupMap[groupName].limit = Math.max(groupMap[groupName].limit, Number(c.limit || 0));
+                } else {
+                    unassignedCards.push(c);
+                }
+            });
+
+            let creditCardsHtml = "";
+
+            // ก. แสดงบัตรเครดิตแบบกลุ่มวงเงินร่วม (Group Card - แบบ A)
+            Object.keys(groupMap).forEach(gName => {
+                const group = groupMap[gName];
+                let groupSpent = 0;
+                let groupInstRemaining = 0;
+                let groupInstMonthly = 0;
+
+                // รวมยอดของทุกบัตรในกลุ่ม
+                const cardsInGroupHtml = group.cards.map(c => {
+                    const fullPayOwed = Math.abs(Number(c.balance || 0));
+                    const instRemaining = cardInstallmentRemainingMap[c.id] || 0;
+                    const instMonthly = cardInstallmentMonthlyMap[c.id] || 0;
+                    
+                    groupSpent += fullPayOwed;
+                    groupInstRemaining += instRemaining;
+                    groupInstMonthly += instMonthly;
+
+                    const cardUsedTotal = fullPayOwed + instRemaining;
+
+                    return `
+                        <div class="flex justify-between items-center text-xs py-1.5 border-b border-rose-100 last:border-0">
+                            <div>
+                                <span class="font-bold text-slate-800">${c.name}</span>
+                                <span class="text-[10px] text-slate-400 block">รูดเต็ม: ฿${fmt(fullPayOwed)} | ผ่อนสะสม: ฿${fmt(instRemaining)}</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <strong class="text-rose-600 font-semibold">฿${fmt(cardUsedTotal)}</strong>
+                                <button onclick="openEditAccountModal('${c.id}')" class="text-slate-400 hover:text-blue-500 font-bold px-1.5 cursor-pointer">✏️</button>
+                            </div>
+                        </div>`;
+                }).join("");
+
+                const totalGroupUsed = groupSpent + groupInstRemaining;
+                const availLimit = group.limit > 0 ? Math.max(0, group.limit - totalGroupUsed) : 0;
+                const usedPct = group.limit > 0 ? Math.min(100, Math.round((totalGroupUsed / group.limit) * 100)) : 0;
+
+                totalCreditAll += totalGroupUsed;
+
+                creditCardsHtml += `
+                    <div class="bg-rose-50/40 p-5 rounded-3xl border border-rose-200 flex flex-col justify-between space-y-3 col-span-full">
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <span class="text-[10px] bg-rose-200 text-rose-800 px-2 py-0.5 rounded-md font-bold">🏢 กลุ่มวงเงินร่วม: ${group.name}</span>
+                                    <div class="text-xs text-slate-400 mt-1">ใช้วงเงินรวมกันของ ${group.cards.length} บัตรย่อย</div>
+                                </div>
+                                <span class="text-xs text-slate-500">ยอดใช้จ่ายรวมทั้งกลุ่ม: <strong class="text-base text-rose-600 font-extrabold">฿${fmt(totalGroupUsed)}</strong></span>
+                            </div>
+                            
+                            <!-- รายการบัตรเครดิตในกลุ่ม -->
+                            <div class="bg-white p-3 rounded-2xl border border-rose-100 divide-y divide-rose-50">
+                                ${cardsInGroupHtml}
+                            </div>
+
+                            <!-- แถบแสดงวงเงินแชร์ร่วม -->
+                            <div class="space-y-1 text-xs">
+                                <div class="flex justify-between text-[11px] font-semibold">
+                                    <span class="text-slate-500">วงเงินเต็มกลุ่ม: ฿${fmt(group.limit)}</span>
+                                    <span class="text-emerald-700">วงเงินคงเหลือร่วมกัน: ฿${fmt(availLimit)}</span>
+                                </div>
+                                ${group.limit > 0 ? `
+                                <div class="w-full h-2.5 bg-slate-200 rounded-full overflow-hidden">
+                                    <div class="h-full bg-rose-500" style="width: ${usedPct}%"></div>
+                                </div>` : ''}
+                            </div>
+                        </div>
+                        <div class="flex justify-end pt-1">
+                            <button onclick="openBatchPayCardModal('${group.cards[0].id}')" class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-xl text-xs font-semibold cursor-pointer shadow-xs">
+                                💸 จ่ายบิล/งวดรวมทั้งกลุ่ม (฿${fmt(groupSpent + groupInstMonthly)})
+                            </button>
+                        </div>
+                    </div>`;
+            });
+
+            // ข. แสดงบัตรเครดิตใบเดี่ยวปกติ (ที่ไม่ได้ตั้งชื่อกลุ่มวงเงินแชร์ร่วม)
+            unassignedCards.forEach(a => {
                 const fullPayOwed = Math.abs(Number(a.balance || 0));
                 const instRemaining = cardInstallmentRemainingMap[a.id] || 0;
                 const instMonthly = cardInstallmentMonthlyMap[a.id] || 0;
-                const combinedCardUsed = fullPayOwed + instRemaining; // ยอดใช้วงเงินรวมทั้งหมดของบัตร
+                const combinedCardUsed = fullPayOwed + instRemaining;
                 const limit = Number(a.limit || 0);
                 const availLimit = limit > 0 ? Math.max(0, limit - combinedCardUsed) : 0;
                 const usedPct = limit > 0 ? Math.min(100, Math.round((combinedCardUsed / limit) * 100)) : 0;
 
                 totalCreditAll += combinedCardUsed;
 
-                return `
-                    <div class="bg-rose-50/30 p-5 rounded-2xl border border-rose-200 flex flex-col justify-between space-y-3">
+                const cleanDueText = a.due ? a.due.replace(/\s*@@GROUP:.*$/, "").trim() : "";
+
+                creditCardsHtml += `
+                    <div class="bg-rose-50/20 p-5 rounded-2xl border border-rose-200 flex flex-col justify-between space-y-3">
                         <div class="space-y-2.5">
                             <div class="flex justify-between items-start">
                                 <div>
-                                    <span class="text-[11px] bg-rose-100 text-rose-700 px-2 py-0.5 rounded-md font-semibold">💳 บัตรเครดิต / PayLater</span>
-                                    <h4 class="font-bold text-slate-800 text-base mt-1">${a.name}</h4>
+                                    <span class="text-[11px] bg-rose-100 text-rose-700 px-2 py-0.5 rounded-md font-semibold">💳 บัตรเครดิตเดี่ยว</span>
+                                    <h4 class="font-bold text-slate-800 text-sm mt-1.5">${a.name}</h4>
                                 </div>
                                 <div class="flex gap-1">
-                                    <button onclick="openEditAccountModal('${a.id}')" class="text-blue-600 px-1.5 py-0.5 bg-white border border-slate-200 rounded-lg text-xs cursor-pointer">✏️</button>
+                                    <button onclick="openEditAccountModal('${a.id}')" class="text-blue-600 px-1 text-xs cursor-pointer">✏️</button>
                                     <button onclick="deleteAccount('${a.id}', '${a.name}')" class="text-slate-400 hover:text-rose-600 px-1 text-xs cursor-pointer">🗑️</button>
                                 </div>
                             </div>
-
-                            <!-- ยอดใช้จ่ายรวมของบัตร (ปลายเดือน + ผ่อน) -->
-                            <div class="bg-white p-3 rounded-xl border border-rose-100 space-y-1.5">
-                                <div class="flex justify-between items-center">
-                                    <span class="text-xs font-semibold text-slate-600">ยอดใช้จ่ายรวมในบัตร:</span>
+                            <div class="bg-white p-3 rounded-xl border border-rose-100 space-y-1">
+                                <div class="flex justify-between items-center text-xs">
+                                    <span class="text-slate-600">ยอดค้างชำระ:</span>
                                     <strong class="text-lg font-extrabold text-rose-600">฿${fmt(combinedCardUsed)}</strong>
                                 </div>
-                                <div class="flex justify-between text-[11px] text-slate-500 pt-1 border-t border-slate-100">
-                                    <span>• จ่ายเต็มปลายเดือน: <strong class="text-slate-700">฿${fmt(fullPayOwed)}</strong></span>
-                                    <span>• ค้างผ่อนรวม: <strong class="text-slate-700">฿${fmt(instRemaining)}</strong></span>
+                                <div class="flex justify-between text-[10px] text-slate-400 pt-1 border-t border-slate-100">
+                                    <span>รูดปลายเดือน: ฿${fmt(fullPayOwed)}</span>
+                                    <span>ผ่อนสะสม: ฿${fmt(instRemaining)}</span>
                                 </div>
                             </div>
-
-                            <!-- วงเงินเต็ม และ วงเงินคงเหลือ -->
                             <div class="space-y-1 text-xs">
                                 <div class="flex justify-between text-[11px]">
-                                    <span class="text-slate-500">วงเงินเต็ม: <strong class="text-slate-700">฿${fmt(limit)}</strong></span>
-                                    <span class="text-emerald-700 font-semibold">วงเงินคงเหลือ: ฿${fmt(availLimit)}</span>
+                                    <span class="text-slate-500">วงเงินเต็ม: ฿${fmt(limit)}</span>
+                                    <span class="text-emerald-700">คงเหลือ: ฿${fmt(availLimit)}</span>
                                 </div>
-                                ${limit > 0 ? `
-                                <div class="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
-                                    <div class="h-full bg-rose-500" style="width: ${usedPct}%"></div>
-                                </div>` : ''}
+                                ${limit > 0 ? `<div class="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden"><div class="h-full bg-rose-500" style="width: ${usedPct}%"></div></div>` : ''}
                             </div>
                         </div>
-
-                        <div class="pt-2 border-t border-rose-100 flex justify-between items-center gap-2">
-                            <span class="text-[11px] text-slate-500">${a.due ? `📅 ${a.due}` : 'พร้อมใช้งาน'}</span>
-                            <button onclick="openBatchPayCardModal('${a.id}')" class="bg-rose-600 hover:bg-rose-700 text-white px-3 py-1.5 rounded-xl text-xs font-semibold cursor-pointer shadow-xs">
-                                💸 จ่ายบิล/งวดรวม (฿${fmt(fullPayOwed + instMonthly)})
-                            </button>
+                        <div class="pt-2 border-t border-rose-100 flex justify-between items-center">
+                            <span class="text-[10px] text-slate-400">${cleanDueText ? `📅 ${cleanDueText}` : ''}</span>
+                            <button onclick="openBatchPayCardModal('${a.id}')" class="bg-rose-600 hover:bg-rose-700 text-white px-3 py-1.5 rounded-xl text-xs font-semibold cursor-pointer">💸 จ่ายรวม (฿${fmt(fullPayOwed + instMonthly)})</button>
                         </div>
                     </div>`;
-            }).join("") || '<p class="text-xs text-slate-400 col-span-full">ยังไม่มีบัตรเครดิต หรือ PayLater</p>';
+            });
 
-            // 3. แสดงรายการหนี้สิน แบ่งตามบัตรเครดิต/PayLater และ บ้าน / รถ / อื่นๆ (ข้อ 6 & ข้อ 7)
+            document.getElementById("creditCardsContainer").innerHTML = creditCardsHtml || '<p class="text-xs text-slate-400 col-span-full">ยังไม่มีข้อมูลบัตรเครดิต/PayLater</p>';
+
+            // 3. หนี้สิน
             renderGroupedDebts(creditCards, cardDebtsListMap);
 
-            // 4. แสดงพอร์ตการลงทุน พร้อมจำนวนเงินที่ได้กำไร (ข้อ 8)
+            // 4. พอร์ตการลงทุน
             let totalInvCost = 0;
             document.getElementById("investmentsContainer").innerHTML = state.investments.map(inv => {
-                const cost = Number(inv.cost || 0);
-                const val = Number(inv.value || 0);
-                const profitAmt = val - cost; // จำนวนเงินที่ได้กำไร
-                const profitPct = cost > 0 ? (profitAmt / cost) * 100 : 0;
-                totalInvCost += cost;
-                totalInvAssets += val;
-
+                const cost = Number(inv.cost || 0); const val = Number(inv.value || 0);
+                const profitAmt = val - cost; const profitPct = cost > 0 ? (profitAmt / cost) * 100 : 0;
+                totalInvCost += cost; totalInvAssets += val;
                 return `
-                    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-2.5">
+                    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-2">
                         <div class="flex justify-between items-center">
-                            <div>
-                                <span class="font-bold text-sm text-slate-800">${inv.name}</span>
-                                <span class="text-[10px] text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md font-semibold ml-1">${inv.category}</span>
-                            </div>
+                            <span class="font-bold text-sm text-slate-800">${inv.name} <span class="text-[10px] text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded-md font-semibold ml-1">${inv.category}</span></span>
                             <div class="flex gap-1">
-                                <button onclick="openEditInvModal('${inv.id}')" class="text-blue-600 text-xs px-2 py-0.5 border border-slate-200 bg-white rounded-lg cursor-pointer font-medium">✏️ แก้ไขราคา</button>
-                                <button onclick="deleteInvestment('${inv.id}', '${inv.name}')" class="text-slate-400 hover:text-rose-600 px-1 text-xs cursor-pointer">🗑️</button>
+                                <button onclick="openEditInvModal('${inv.id}')" class="text-blue-600 text-xs px-2 py-0.5 border border-slate-200 bg-white rounded-lg cursor-pointer font-medium">✏️ แก้ราคา</button>
+                                <button onclick="deleteInvestment('${inv.id}', '${inv.name}')" class="text-slate-400 px-1 text-xs cursor-pointer">🗑️</button>
                             </div>
                         </div>
-                        <div class="grid grid-cols-3 gap-2 text-xs bg-white p-2.5 rounded-xl border border-slate-100">
-                            <div>
-                                <div class="text-[10px] text-slate-400">ต้นทุนที่ซื้อ</div>
-                                <div class="font-semibold text-slate-700">฿${fmt(cost)}</div>
-                            </div>
-                            <div>
-                                <div class="text-[10px] text-slate-400">มูลค่าปัจจุบัน</div>
-                                <div class="font-bold text-slate-900">฿${fmt(val)}</div>
-                            </div>
-                            <div>
-                                <div class="text-[10px] text-slate-400">จำนวนเงินกำไร/ขาดทุน</div>
-                                <div class="font-extrabold ${profitAmt >= 0 ? 'text-emerald-600' : 'text-rose-600'}">
-                                    ${profitAmt >= 0 ? '+฿' : '-฿'}${fmt(Math.abs(profitAmt))} (${profitAmt >= 0 ? '+' : ''}${profitPct.toFixed(2)}%)
-                                </div>
-                            </div>
+                        <div class="flex justify-between text-xs text-slate-500 bg-white p-2.5 rounded-xl border border-slate-100">
+                            <span>ต้นทุน: ฿${fmt(cost)} | ปัจจุบัน: ฿${fmt(val)}</span>
+                            <span class="${profitAmt >= 0 ? 'text-emerald-600' : 'text-rose-600'} font-bold">
+                                ${profitAmt >= 0 ? '+' : ''}${fmt(profitAmt)} (${profitPct.toFixed(2)}%)
+                            </span>
                         </div>
                     </div>`;
             }).join("") || '<p class="text-xs text-slate-400 col-span-full">ยังไม่มีรายการลงทุน</p>';
@@ -1363,34 +1309,27 @@
             document.getElementById("invTotalCost").textContent = `฿${fmt(totalInvCost)}`;
             document.getElementById("invTotalVal").textContent = `฿${fmt(totalInvAssets)}`;
             const invProfEl = document.getElementById("invTotalProfit");
-            invProfEl.textContent = `${totalProfitAmt >= 0 ? '+฿' : '-฿'}${fmt(Math.abs(totalProfitAmt))} (${totalProfitAmt >= 0 ? '+' : ''}${totalProfitPct.toFixed(2)}%)`;
-            invProfEl.className = profitClass(totalProfitAmt);
+            invProfEl.textContent = `${totalProfitAmt >= 0 ? '+' : ''}฿${fmt(totalProfitAmt)} (${totalProfitAmt >= 0 ? '+' : ''}${totalProfitPct.toFixed(2)}%)`;
+            invProfEl.className = totalProfitAmt >= 0 ? "text-emerald-600 font-bold text-xs" : "text-rose-600 font-bold text-xs";
 
-            // สรุปยอดรวมบนการ์ด Net Worth
             const totalAssets = totalBankAssets + totalInvAssets;
             const totalLiabilities = totalCreditAll + totalOtherDebts;
 
             document.getElementById("bankTotalText").textContent = `฿${fmt(totalBankAssets)}`;
             document.getElementById("creditTotalText").textContent = `฿${fmt(totalCreditAll)}`;
             document.getElementById("totalAssets").textContent = `฿${fmt(totalAssets)}`;
-            document.getElementById("totalCreditAll").textContent = `฿${fmt(totalCreditAll)}`;
-            document.getElementById("totalOtherDebts").textContent = `฿${fmt(totalOtherDebts)}`;
+            document.getElementById("totalCreditSpent").textContent = `฿${fmt(totalCreditAll)}`;
+            document.getElementById("totalInstallmentDebts").textContent = `฿${fmt(totalOtherDebts)}`;
             document.getElementById("netWorthDisplay").textContent = `฿${fmt(totalAssets - totalLiabilities)}`;
 
             renderMonthlySummary();
             renderTable();
         }
 
-        function profitClass(val) {
-            return val >= 0 ? "text-emerald-600 font-bold" : "text-rose-600 font-bold";
-        }
-
-        // แสดงหนี้สินแยกกลุ่มตามบัตรเครดิต/PayLater และหมวด บ้าน / รถ / อื่นๆ (ข้อ 6 & ข้อ 7)
         function renderGroupedDebts(creditCards, cardDebtsListMap) {
             const container = document.getElementById("debtsContainer");
             let html = "";
 
-            // ก. กลุ่มบัตรเครดิต / PayLater แต่ละใบ
             creditCards.forEach(card => {
                 const items = cardDebtsListMap[card.id] || [];
                 const fullPay = Math.abs(Number(card.balance || 0));
@@ -1400,46 +1339,38 @@
                 const sumMonth = items.reduce((s, d) => s + Math.min(Number(d.installmentAmount || 0), Number(d.remainingAmount || 0)), 0);
 
                 html += `
-                    <div class="p-4 rounded-2xl bg-rose-50/40 border border-rose-200 space-y-3">
+                    <div class="p-4 rounded-2xl bg-rose-50/30 border border-rose-100 space-y-3">
                         <div class="flex flex-wrap justify-between items-center gap-2 pb-2 border-b border-rose-100">
                             <div>
-                                <span class="text-xs font-bold text-rose-800">💳 ${card.name} (ผ่อนอยู่ ${items.length} รายการ)</span>
-                                <div class="text-[11px] text-slate-500">
-                                    ยอดผ่อนคงเหลือรวม: <strong class="text-rose-600">฿${fmt(sumRem)}</strong> |
-                                    ค่างวดผ่อน/เดือน: <strong>฿${fmt(sumMonth)}</strong>
-                                    ${fullPay > 0 ? ` | จ่ายเต็มปลายเดือน: <strong>฿${fmt(fullPay)}</strong>` : ''}
-                                </div>
+                                <span class="text-xs font-bold text-rose-800">💳 ${card.name} (ค้างชำระสะสม: ฿${fmt(sumRem + fullPay)})</span>
+                                <div class="text-[10px] text-slate-500 mt-0.5">ค้างผ่อนรวม: ฿${fmt(sumRem)} | ค่างวดเดือนนี้: ฿${fmt(sumMonth)}</div>
                             </div>
-                            <button onclick="openBatchPayCardModal('${card.id}')" class="bg-rose-600 hover:bg-rose-700 text-white px-3.5 py-1.5 rounded-xl text-xs font-semibold cursor-pointer shadow-xs">
-                                💸 จ่ายงวดรวมของ ${card.name}
-                            </button>
+                            <button onclick="openBatchPayCardModal('${card.id}')" class="bg-rose-600 hover:bg-rose-700 text-white px-3.5 py-1.5 rounded-xl text-xs font-semibold cursor-pointer shadow-xs">💸 จ่ายงวดรวม</button>
                         </div>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            ${items.map(d => renderSingleDebtCard(d)).join("") || `<div class="text-xs text-slate-400 col-span-full">มีเฉพาะยอดรอชำระปลายเดือน ฿${fmt(fullPay)}</div>`}
+                            ${items.map(d => renderSingleDebtCard(d)).join("") || `<div class="text-xs text-slate-400 py-2">มีเฉพาะยอดชำระปลายเดือนครั้งเดียว</div>`}
                         </div>
                     </div>`;
             });
 
-            // ข. กลุ่มหนี้สินประเภท บ้าน, รถ, สินเชื่อส่วนบุคคล, อื่นๆ
-            const categories = [
-                { key: "Home", title: "🏠 สินเชื่อบ้าน & ที่อยู่อาศัย" },
-                { key: "Car", title: "🚗 สินเชื่อรถยนต์ & ยานพาหนะ" },
+            const otherCats = [
+                { key: "Home", title: "🏠 สินเชื่อที่อยู่อาศัย (บ้าน / คอนโด)" },
+                { key: "Car", title: "🚗 สินเชื่อยานพาหนะ (รถยนต์ / มอเตอร์ไซค์)" },
                 { key: "Personal", title: "🏦 สินเชื่อส่วนบุคคล" },
                 { key: "Other", title: "📌 หนี้สินและค่างวดอื่นๆ" }
             ];
 
-            categories.forEach(cat => {
-                const list = state.debts
-                    .map(d => ({ ...d, meta: parseDebtMeta(d) }))
+            otherCats.forEach(cat => {
+                const list = state.debts.map(d => ({ ...d, meta: parseDebtMeta(d) }))
                     .filter(d => d.meta.category === cat.key || (cat.key === "Other" && d.meta.category === "Card" && !d.meta.cardId));
 
                 if (list.length > 0) {
                     const sumRem = list.reduce((s, d) => s + Number(d.remainingAmount || 0), 0);
                     html += `
                         <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
-                            <div class="flex justify-between items-center pb-2 border-b border-slate-200/70">
+                            <div class="flex justify-between items-center pb-2 border-b border-slate-200">
                                 <span class="text-xs font-bold text-slate-800">${cat.title} (${list.length} รายการ)</span>
-                                <span class="text-xs text-slate-500">หนี้คงเหลือรวม: <strong class="text-rose-600">฿${fmt(sumRem)}</strong></span>
+                                <span class="text-xs text-slate-500">คงเหลือรวม: <strong class="text-rose-600">฿${fmt(sumRem)}</strong></span>
                             </div>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 ${list.map(d => renderSingleDebtCard(d)).join("")}
@@ -1448,41 +1379,31 @@
                 }
             });
 
-            container.innerHTML = html || `<p class="text-xs text-slate-400 text-center py-4">ยังไม่มีรายการหนี้สินหรือค่างวดผ่อนชำระ</p>`;
+            container.innerHTML = html || `<p class="text-xs text-slate-400 text-center py-4">ยังไม่มีหนี้สินผ่อนชำระ</p>`;
         }
 
         function renderSingleDebtCard(d) {
-            const total = Number(d.totalAmount || 0);
-            const rem = Number(d.remainingAmount || 0);
+            const total = Number(d.totalAmount || 0); const rem = Number(d.remainingAmount || 0);
             const paidPct = total > 0 ? Math.min(100, Math.round(((total - rem) / total) * 100)) : 0;
             return `
-                <div class="bg-white p-3.5 rounded-xl border border-slate-200 space-y-2">
+                <div class="bg-white p-3.5 rounded-xl border border-slate-200/80 space-y-2">
                     <div class="flex justify-between items-start">
                         <div>
-                            <div class="font-bold text-xs sm:text-sm text-slate-800">${d.name}</div>
+                            <div class="font-bold text-xs text-slate-800">${d.name}</div>
                             ${d.meta.cleanDue ? `<div class="text-[10px] text-slate-400">📅 ${d.meta.cleanDue}</div>` : ''}
                         </div>
-                        <div class="flex items-center gap-1">
-                            <button onclick="openEditDebtModal('${d.id}')" class="text-blue-600 px-1.5 py-0.5 text-xs hover:bg-blue-50 rounded cursor-pointer">✏️</button>
+                        <div class="flex items-center gap-1.5">
+                            <button onclick="openEditDebtModal('${d.id}')" class="text-blue-600 hover:bg-blue-50 px-1.5 py-0.5 rounded text-xs cursor-pointer">✏️</button>
                             <button onclick="deleteDebt('${d.id}', '${d.name}')" class="text-slate-400 hover:text-rose-600 px-1 text-xs cursor-pointer">🗑️</button>
-                            <button onclick="openPayDebtModal('${d.id}')" class="bg-slate-800 hover:bg-slate-900 text-white px-2.5 py-1 rounded-lg text-[11px] font-medium cursor-pointer">จ่ายเดี่ยว</button>
+                            <button onclick="openPayDebtModal('${d.id}')" class="bg-slate-800 text-white px-2.5 py-1 rounded-lg text-[10px] font-medium cursor-pointer">จ่าย</button>
                         </div>
                     </div>
-                    <div class="flex justify-between text-xs text-slate-500">
-                        <span>คงเหลือ: <strong class="text-rose-600">฿${fmt(rem)}</strong> <span class="text-[10px] text-slate-400">/ ฿${fmt(total)}</span></span>
-                        <span>งวดละ: <strong class="text-slate-800">฿${fmt(d.installmentAmount)}</strong></span>
+                    <div class="flex justify-between text-[11px] text-slate-500">
+                        <span>คงเหลือ: <strong class="text-rose-600">฿${fmt(rem)}</strong> <span class="text-slate-300">/ ฿${fmt(total)}</span></span>
+                        <span>ค่างวด: ฿${fmt(d.installmentAmount)}</span>
                     </div>
-                    <div class="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                        <div class="h-full bg-emerald-500" style="width: ${paidPct}%"></div>
-                    </div>
+                    <div class="w-full h-1 bg-slate-100 rounded-full overflow-hidden"><div class="h-full bg-emerald-500" style="width: ${paidPct}%"></div></div>
                 </div>`;
-        }
-
-        // ================= ข้อ 3: ตารางความเคลื่อนไหว เรียงตามวันที่ =================
-        function toggleTxSortOrder() {
-            txSortDesc = !txSortDesc;
-            document.getElementById("btnSortDate").textContent = txSortDesc ? "📅 เรียง: ล่าสุด ⬇" : "📅 เรียง: เก่าสุด ⬆";
-            renderTable();
         }
 
         function renderTable() {
@@ -1490,31 +1411,26 @@
             const accMap = Object.fromEntries(state.accounts.map(a => [a.id, a.name]));
 
             const list = state.transactions
-                .filter(t =>
-                    (t.category && t.category.toLowerCase().includes(kw)) ||
-                    (t.note && t.note.toLowerCase().includes(kw))
-                )
+                .filter(t => (t.category && t.category.toLowerCase().includes(kw)) || (t.note && t.note.toLowerCase().includes(kw)))
                 .slice()
                 .sort((a, b) => {
-                    const da = cleanDateStr(a.date);
-                    const db = cleanDateStr(b.date);
+                    const da = cleanDateStr(a.date); const db = cleanDateStr(b.date);
                     if (da === db) return 0;
                     return txSortDesc ? (db > da ? 1 : -1) : (da > db ? 1 : -1);
                 });
 
             document.getElementById("txTableBody").innerHTML = list.map(t => {
-                const isInc = t.type === "Income";
-                const isTrf = t.type === "Transfer";
+                const isInc = t.type === "Income"; const isTrf = t.type === "Transfer";
                 return `
-                    <tr class="hover:bg-slate-50">
-                        <td class="py-2.5 px-2 text-slate-500 font-mono whitespace-nowrap">${cleanDateStr(t.date) || '-'}</td>
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="py-2.5 px-2 font-mono text-slate-400">${cleanDateStr(t.date) || '-'}</td>
                         <td class="py-2.5 px-2 font-medium text-slate-700">${t.category} ${t.note ? `<span class="text-[11px] text-slate-400">(${t.note})</span>` : ''}</td>
-                        <td class="py-2.5 px-2 text-slate-500">${accMap[t.accountId] || '-'} ${isTrf && t.targetAccountId ? `→ ${accMap[t.targetAccountId] || ''}` : ''}</td>
+                        <td class="py-2.5 px-2 text-slate-500 text-xs">${accMap[t.accountId] || '-'} ${isTrf && t.targetAccountId ? `→ ${accMap[t.targetAccountId] || ''}` : ''}</td>
                         <td class="py-2.5 px-2 text-right font-bold whitespace-nowrap ${isInc ? 'text-emerald-600' : (isTrf ? 'text-blue-600' : 'text-rose-600')}">
                             ${isInc ? '+' : (isTrf ? '⇄ ' : '-')}${fmt(t.amount)}
                         </td>
                         <td class="py-2.5 px-2 text-center whitespace-nowrap">
-                            <button onclick="openEditTxModal('${t.id}')" class="text-blue-600 hover:text-blue-800 mr-2 cursor-pointer font-medium">แก้ไข</button>
+                            <button onclick="openEditTxModal('${t.id}')" class="text-blue-600 mr-2 cursor-pointer font-medium">แก้ไข</button>
                             <button onclick="deleteTx('${t.id}')" class="text-slate-400 hover:text-rose-600 cursor-pointer font-medium">ลบ</button>
                         </td>
                     </tr>`;
@@ -1529,19 +1445,15 @@
                     if (selectedMonth === "ALL") return true;
                     return cleanDateStr(t.date).startsWith(selectedMonth);
                 })
-                .forEach(t => {
-                    expMap[t.category] = (expMap[t.category] || 0) + Number(t.amount || 0);
-                });
+                .forEach(t => { expMap[t.category] = (expMap[t.category] || 0) + Number(t.amount || 0); });
 
-            const labels = Object.keys(expMap);
-            const data = Object.values(expMap);
-
+            const labels = Object.keys(expMap); const data = Object.values(expMap);
             if (expenseChartInstance) expenseChartInstance.destroy();
             const ctx = document.getElementById('expenseChart').getContext('2d');
             expenseChartInstance = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
-                    labels: labels.length ? labels : ['ยังไม่มีรายจ่ายในเดือนนี้'],
+                    labels: labels.length ? labels : ['ยังไม่มีรายจ่าย'],
                     datasets: [{
                         data: data.length ? data : [1],
                         backgroundColor: data.length ? ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4'] : ['#e2e8f0'],
@@ -1549,9 +1461,8 @@
                     }]
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: { size: 11 } } } }
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: { size: 10 } } } }
                 }
             });
         }
