@@ -9,6 +9,22 @@
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans antialiased">
 
+    <!-- SETUP API SCREEN (แสดงเมื่อเปิดใช้งานครั้งแรกเพื่อป้องกัน URL หลุดใน GitHub) -->
+    <div id="setupApiScreen" class="fixed inset-0 bg-slate-900 flex items-center justify-center z-50 p-4 hidden">
+        <div class="bg-white rounded-3xl p-8 w-full max-w-md text-center space-y-5 shadow-2xl border border-slate-100">
+            <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-2xl mx-auto flex items-center justify-center text-2xl font-bold">⚙️</div>
+            <div>
+                <h2 class="text-xl font-bold text-slate-900">เชื่อมต่อฐานข้อมูล Google Sheets</h2>
+                <p class="text-xs text-slate-400 mt-1">กรุณากรอก URL ของ Google Apps Script Web App</p>
+            </div>
+            <div class="space-y-3">
+                <input type="text" id="setupScriptUrl" placeholder="https://script.google.com/macros/s/.../exec" class="w-full text-xs px-3.5 py-3 border border-slate-200 rounded-xl outline-none focus:border-blue-500">
+                <p class="text-[10px] text-slate-500 text-left bg-slate-50 p-3 rounded-lg">💡 URL นี้จะถูกบันทึกไว้ในเบราว์เซอร์เครื่องนี้ของคุณคนเดียวอย่างปลอดภัย เมื่อนำโค้ดขึ้น GitHub แบบ Public คนอื่นจะไม่เห็น URL ส่วนตัวของคุณ</p>
+            </div>
+            <button onclick="saveSetupApi()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-2xl font-semibold transition cursor-pointer">บันทึกและเข้าสู่ระบบ</button>
+        </div>
+    </div>
+
     <!-- LOGIN SCREEN (PIN) -->
     <div id="loginScreen" class="fixed inset-0 bg-slate-900 flex items-center justify-center z-50 p-4">
         <div class="bg-white rounded-3xl p-8 w-full max-w-sm text-center space-y-6 shadow-2xl">
@@ -19,6 +35,7 @@
             </div>
             <input type="password" id="userPin" maxlength="4" onkeydown="if(event.key==='Enter')checkPin()" class="w-40 text-center tracking-widest text-2xl py-2 border-2 border-slate-200 rounded-2xl focus:border-blue-500 outline-none mx-auto block" placeholder="••••">
             <button onclick="checkPin()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-2xl font-semibold transition cursor-pointer">เข้าสู่ระบบ</button>
+            <button onclick="resetSavedApi()" class="w-full text-xs text-slate-400 hover:text-slate-600 cursor-pointer pt-2">⚙️ ตั้งค่า / เปลี่ยน URL เชื่อมต่อ API</button>
         </div>
     </div>
 
@@ -47,7 +64,7 @@
             <!-- NET WORTH CARD -->
             <div class="bg-slate-900 text-white rounded-3xl p-6 sm:p-8 shadow-xl relative overflow-hidden">
                 <div class="relative z-10 space-y-2">
-                    <span class="text-xs uppercase tracking-wider text-slate-400 font-semibold">ความมั่งคั่งสุทธิ (ทรัพย์สินรวม - หหนี้สินและบัตรเครดิตทั้งหมด)</span>
+                    <span class="text-xs uppercase tracking-wider text-slate-400 font-semibold">ความมั่งคั่งสุทธิ (ทรัพย์สินรวม - หนี้สินและบัตรเครดิตทั้งหมด)</span>
                     <div id="netWorthDisplay" class="text-3xl sm:text-4xl font-extrabold tracking-tight">฿0.00</div>
                     <div class="flex flex-wrap gap-4 sm:gap-6 pt-2 text-xs text-slate-300">
                         <span>ทรัพย์สินรวม: <strong id="totalAssets" class="text-emerald-400">฿0.00</strong></span>
@@ -191,7 +208,7 @@
         </main>
     </div>
 
-    <!-- MODAL 1: ACCOUNT / CREDIT CARD (เพิ่มฟีเจอร์แชร์วงเงินร่วม) -->
+    <!-- MODAL 1: ACCOUNT / CREDIT CARD (พร้อมระบบแชร์วงเงินร่วม) -->
     <div id="accountModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
         <div class="bg-white rounded-2xl p-6 w-full max-w-md space-y-4 shadow-2xl">
             <h3 id="accountModalTitle" class="text-lg font-bold text-slate-800">จัดการบัญชี / บัตร</h3>
@@ -209,13 +226,10 @@
                     <label class="block text-xs text-slate-500 mb-1">ชื่อบัญชี / ชื่อบัตร หรือ PayLater</label>
                     <input type="text" id="accName" required placeholder="เช่น กสิกรไทย, บัตร KTC Visa, SPayLater" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm">
                 </div>
-                
                 <div id="accBalanceGroup">
                     <label class="block text-xs text-slate-500 mb-1" id="accBalanceLabel">ยอดเงินคงเหลือในบัญชี (บาท)</label>
                     <input type="number" id="accBalance" step="0.01" value="0" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm font-bold">
                 </div>
-
-                <!-- ฟิลด์เฉพาะบัตรเครดิต + ระบบแชร์วงเงิน -->
                 <div id="ccExtraFields" class="hidden space-y-3 pt-2 border-t border-slate-100">
                     <div class="p-2.5 bg-blue-50 text-blue-700 rounded-xl text-[11px]" id="ccAddNotice">
                         💡 การเพิ่มบัตรไม่ต้องใส่ยอดเงินที่ต้องจ่ายเริ่มต้น โดยให้ไปบันทึกยอดใช้จ่ายที่ปุ่ม <strong>"📤 บันทึกรายจ่าย / รูดบัตร"</strong> แทน
@@ -244,7 +258,6 @@
                         <input type="text" id="accDue" placeholder="เช่น ตัดรอบ 25 / จ่ายวันที่ 5" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm">
                     </div>
                 </div>
-
                 <div class="flex justify-end gap-2 pt-2">
                     <button type="button" onclick="closeModal('accountModal')" class="px-4 py-2 text-sm text-slate-500 cursor-pointer">ยกเลิก</button>
                     <button type="submit" class="px-4 py-2 text-sm bg-blue-600 text-white rounded-xl font-medium cursor-pointer">บันทึก</button>
@@ -282,6 +295,7 @@
                     <input type="number" id="txAmount" step="0.01" min="0.01" required oninput="onTxAmountInput()" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm font-bold">
                 </div>
 
+                <!-- 💳 กล่องตัวเลือกเมื่อรูดบัตรเครดิต/PayLater -->
                 <div id="ccInstallmentBox" class="hidden p-3.5 bg-rose-50/70 border border-rose-200 rounded-2xl space-y-3">
                     <label class="block text-xs font-bold text-rose-800">💳 รูปแบบการชำระของบัตรเครดิต / PayLater</label>
                     <div class="grid grid-cols-2 gap-2">
@@ -346,7 +360,7 @@
                 </div>
                 <div>
                     <label class="block text-xs text-slate-500 mb-1">ชื่อรายการหนี้ / สินค้าที่ผ่อน</label>
-                    <input type="text" id="debtName" required placeholder="เช่น ผ่อน iPhone, ผ่อนบ้าน" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm">
+                    <input type="text" id="debtName" required placeholder="เช่น ผ่อน iPad, ผ่อนบ้าน, ผ่อนรถยนต์" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm">
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
@@ -358,6 +372,7 @@
                         <input type="number" id="debtRemaining" step="0.01" required class="w-full border-2 border-amber-300 rounded-xl px-3 py-2 text-sm font-bold text-rose-600">
                     </div>
                 </div>
+                <p class="text-[11px] text-slate-400 -mt-1">* หากบันทึกย้อนหลังและจ่ายไปบางงวดแล้ว ให้ใส่เฉพาะยอดที่เหลือในช่อง "ยอดคงเหลือที่ต้องผ่อน"</p>
                 <div>
                     <label class="block text-xs text-slate-500 mb-1">ค่างวดที่ต้องจ่ายต่อเดือน (บาท)</label>
                     <input type="number" id="debtInstallment" step="0.01" required class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm font-bold">
@@ -405,7 +420,7 @@
         <div class="bg-white rounded-2xl p-6 w-full max-w-lg space-y-4 shadow-2xl max-h-[92vh] overflow-y-auto">
             <div>
                 <h3 id="batchPayTitle" class="text-lg font-bold text-slate-800">💳 ชำระยอดบัตร / จ่ายงวดรวม</h3>
-                <p class="text-xs text-slate-500">แสดงรายการที่ผ่อนอยู่และยอดรอชำระปลายเดือนของบัตรนี้</p>
+                <p class="text-xs text-slate-500">แสดงรายการที่ผ่อนอยู่และยอดรอชำระปลายเดือนของบัตรนี้ สามารถระบุจำนวนเงินที่ชำระจริงในแต่ละรายการได้</p>
             </div>
             <form onsubmit="submitBatchPayCard(event)" class="space-y-4">
                 <input type="hidden" id="batchPayCardId">
@@ -440,7 +455,7 @@
                 <input type="hidden" id="invId">
                 <div>
                     <label class="block text-xs text-slate-500 mb-1">ชื่อสินทรัพย์ / กองทุน / หุ้น</label>
-                    <input type="text" id="invName" required placeholder="เช่น SCBS&P500, K-USA, ทองคำ" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm">
+                    <input type="text" id="invName" required placeholder="เช่น SCBS&P500, K-USA, หุ้น PTT, ทองคำ" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm">
                 </div>
                 <div>
                     <label class="block text-xs text-slate-500 mb-1">หมวดหมู่</label>
@@ -464,12 +479,43 @@
 
     <!-- JAVASCRIPT LOGIC -->
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwbeiGiO8tjDU_N0WtlkwyWiHiwkSkkED04_CQYXiZD1AXaZioikO9waUHhEOA3nvrEzQ/exec";
+        let SCRIPT_URL = localStorage.getItem("WIN_WEALTH_API_URL") || "";
+
+        window.addEventListener("DOMContentLoaded", () => {
+            if (!SCRIPT_URL) {
+                document.getElementById("loginScreen").classList.add("hidden");
+                document.getElementById("setupApiScreen").classList.remove("hidden");
+            }
+        });
+
+        function saveSetupApi() {
+            const urlInput = document.getElementById("setupScriptUrl").value.trim();
+            if (!urlInput || !urlInput.startsWith("https://script.google.com")) {
+                alert("กรุณากรอก URL Web App ของคุณให้ถูกต้องขึ้นต้นด้วย https://script.google.com");
+                return;
+            }
+            localStorage.setItem("WIN_WEALTH_API_URL", urlInput);
+            SCRIPT_URL = urlInput;
+            alert("บันทึก URL เชื่อมต่อสำเร็จแล้วค่ะ!");
+            location.reload();
+        }
+
+        function resetSavedApi() {
+            if (confirm("ต้องการเปลี่ยน URL ลิงก์เชื่อมโยง Google Sheets หรือไม่?")) {
+                localStorage.removeItem("WIN_WEALTH_API_URL");
+                location.reload();
+            }
+        }
+
         let state = { accounts: [], transactions: [], goals: [], debts: [], investments: [] };
         let expenseChartInstance = null;
         let txSortDesc = true;
 
         async function apiCall(payload) {
+            if (!SCRIPT_URL) {
+                alert("ยังไม่ได้ตั้งค่า SCRIPT_URL");
+                return null;
+            }
             try {
                 const res = await fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) });
                 return await res.json();
@@ -522,7 +568,7 @@
             document.getElementById(id).classList.remove("flex");
         }
 
-        // ================= Meta Helper: แยกข้อมูลวงเงินร่วม (Shared Limit) ใน Account Due =================
+        // ================= Meta Helper: วงเงินร่วม (Shared Limit) ใน Account Due =================
         function packAccountDue(dueText, sharedParentId) {
             const clean = (dueText || "").replace(/\s*@@SHARED:[^@\s]*/g, "").trim();
             return sharedParentId ? `${clean} @@SHARED:${sharedParentId}`.trim() : clean;
@@ -655,7 +701,7 @@
             const type = document.getElementById("accType").value;
             const rawBal = Number(document.getElementById("accBalance").value || 0);
             const finalBalance = type === "CreditCard" ? -Math.abs(rawBal) : rawBal;
-            
+
             let finalDue = document.getElementById("accDue").value.trim();
             if (type === "CreditCard") {
                 const isShared = document.getElementById("accIsShared").checked;
@@ -1215,13 +1261,13 @@
             renderChart(selectedMonth);
         }
 
-        // ================= RENDER DASHBOARD (รวมระบบคำนวณวงเงินร่วม Shared Limit) =================
+        // ================= RENDER DASHBOARD (พร้อมระบบวงเงินร่วม Shared Limit) =================
         function renderDashboard() {
             let totalBankAssets = 0, totalInvAssets = 0, totalCreditAll = 0, totalOtherDebts = 0;
             const bankAccounts = state.accounts.filter(a => a.type !== 'CreditCard');
             const creditCards = state.accounts.filter(a => a.type === 'CreditCard');
 
-            // 1. รวบรวมยอดผ่อนของแต่ละบัตร
+            // 1. คำนวณยอดผ่อนของแต่ละบัตร
             const cardInstallmentRemainingMap = {};
             const cardInstallmentMonthlyMap = {};
             const cardDebtsListMap = {};
@@ -1242,7 +1288,7 @@
                 }
             });
 
-            // 2. คำนวณยอดใช้จ่ายของแต่ละบัตรใบเดี่ยว (เดบิตปลายเดือน + ผ่อน)
+            // 2. คำนวณยอดรูดใช้จ่ายของแต่ละบัตรใบเดี่ยว
             const cardIndividualUsedMap = {};
             creditCards.forEach(c => {
                 const fullPayOwed = Math.abs(Number(c.balance || 0));
@@ -1271,7 +1317,6 @@
                 return curr;
             }
 
-            // คำนวณยอดใช้จ่ายรวม และวงเงินรวมของแต่ละกลุ่ม
             const groupTotalUsedMap = {};
             const groupLimitMap = {};
             const groupMembersCountMap = {};
@@ -1289,7 +1334,7 @@
                 }
             });
 
-            // แสดงรายการธนาคาร & เงินสด
+            // แสดงรายการบัญชีธนาคาร & เงินสด
             document.getElementById("bankAccountsContainer").innerHTML = bankAccounts.map(a => {
                 const bal = Number(a.balance || 0);
                 totalBankAssets += bal;
@@ -1307,7 +1352,7 @@
                     </div>`;
             }).join("") || '<p class="text-xs text-slate-400 col-span-full">ยังไม่มีบัญชีธนาคาร</p>';
 
-            // แสดงรายการบัตรเครดิต & PayLater พร้อมระบบวงเงินร่วม
+            // แสดงรายการบัตรเครดิต & PayLater พร้อมการคำนวณวงเงินร่วม
             document.getElementById("creditCardsContainer").innerHTML = creditCards.map(a => {
                 const fullPayOwed = Math.abs(Number(a.balance || 0));
                 const instRemaining = cardInstallmentRemainingMap[a.id] || 0;
