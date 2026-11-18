@@ -42,7 +42,7 @@
 <body class="text-slate-800 antialiased selection:bg-blue-600 selection:text-white">
 
     <!-- SETUP API SCREEN (แสดงเมื่อเปิดใช้งานครั้งแรกเพื่อป้องกัน URL หลุดใน GitHub) -->
-    <div id="setupApiScreen" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md flex items-center justify-center z-50 p-4 hidden">
+    <div id="setupApiScreen" class="fixed inset-0 w-full min-h-screen bg-slate-950/90 backdrop-blur-md flex items-center justify-center z-50 p-4 hidden overflow-hidden">
         <div class="bg-white rounded-3xl p-8 w-full max-w-md text-center space-y-5 shadow-2xl border border-slate-100 modal-animate">
             <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 text-white rounded-2xl mx-auto flex items-center justify-center shadow-lg shadow-blue-500/30">
                 <i data-lucide="database" class="w-8 h-8"></i>
@@ -65,7 +65,7 @@
     </div>
 
     <!-- LOGIN SCREEN (PIN) -->
-    <div id="loginScreen" class="fixed inset-0 bg-slate-950 flex items-center justify-center z-50 p-4 relative overflow-hidden">
+    <div id="loginScreen" class="fixed inset-0 w-full min-h-screen bg-slate-950 flex items-center justify-center z-50 p-4 overflow-hidden">
         <!-- Decoration Glow -->
         <div class="absolute -top-32 -left-32 w-96 h-96 bg-blue-600/20 rounded-full blur-3xl pointer-events-none"></div>
         <div class="absolute -bottom-32 -right-32 w-96 h-96 bg-rose-600/20 rounded-full blur-3xl pointer-events-none"></div>
@@ -76,7 +76,7 @@
             </div>
             <div>
                 <h2 class="text-xl font-extrabold text-slate-900">ใส่ PIN ล็อกอิน</h2>
-                <p class="text-xs text-slate-400 mt-1">กรุณากรอกรหัสผ่านเพื่อเข้าใช้งาน (เริ่มต้น 1234)</p>
+                <p class="text-xs text-slate-400 mt-1">กรุณากรอกรหัสผ่านเพื่อเข้าใช้งาน</p>
             </div>
             <input type="password" id="userPin" maxlength="4" onkeydown="if(event.key==='Enter')checkPin()" class="w-44 text-center tracking-[0.5em] text-2xl font-bold py-2.5 border-2 border-slate-200 rounded-2xl focus:border-blue-600 focus:ring-4 focus:ring-blue-500/15 outline-none mx-auto block transition" placeholder="••••">
             <button onclick="checkPin()" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-3 rounded-2xl font-semibold shadow-lg shadow-blue-600/25 transition cursor-pointer flex items-center justify-center gap-2">
@@ -104,7 +104,7 @@
                             <h1 class="font-extrabold text-slate-900 text-base sm:text-lg tracking-tight">Win Wealth Manager</h1>
                             <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 border border-blue-200/60">Pro</span>
                         </div>
-                        <p class="text-xs text-slate-400">ระบบบริหารความมั่งคั่ง บัตรเครดิตวงเงินร่วม และพอร์ตการลงทุน</p>
+                        <p class="text-xs text-slate-400">ระบบบริหารรายรับ - รายจ่าย ส่วนบุคคล</p>
                     </div>
                 </div>
                 <div class="flex flex-wrap items-center gap-2">
@@ -701,7 +701,7 @@
 
         let state = { accounts: [], transactions: [], goals: [], debts: [], investments: [] };
         let expenseChartInstance = null;
-        let txSortDesc = true;
+        let txSortDesc = false; // เปลี่ยนเป็น false เพื่อให้แสดงผลจากเก่าไปใหม่ (Oldest First) เป็นค่าเริ่มต้น
 
         async function apiCall(payload) {
             if (!SCRIPT_URL) {
@@ -1834,10 +1834,11 @@
 
         // ================= 6. ตารางความเคลื่อนไหว (Banking Feed Style) =================
         function toggleTxSortOrder() {
-            txSortDesc = !txSortDesc;
-            document.getElementById("btnSortDate").textContent = txSortDesc ? "📅 เรียง: ล่าสุด ⬇" : "📅 เรียง: เก่าสุด ⬆";
-            renderTable();
-        }
+    txSortDesc = !txSortDesc;
+    // ปรับสัญลักษณ์ปุ่มให้ตรงกับสถานะสลับจริง
+    document.getElementById("btnSortDate").textContent = txSortDesc ? "📅 เรียง: ล่าสุด ⬇" : "📅 เรียง: เก่าสุด ⬆";
+    renderTable();
+}
 
         function renderTable() {
             const kw = (document.getElementById("searchInput").value || "").toLowerCase();
