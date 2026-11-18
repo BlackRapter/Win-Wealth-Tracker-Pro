@@ -4,173 +4,349 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Win Wealth Tracker Pro</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', 'Noto Sans Thai', sans-serif;
+            background-color: #f1f5f9;
+            background-image: radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.06) 0px, transparent 50%),
+                              radial-gradient(at 100% 0%, rgba(244, 63, 94, 0.05) 0px, transparent 50%);
+            background-attachment: fixed;
+        }
+        .card-hover {
+            transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .card-hover:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 14px 28px -8px rgba(15, 23, 42, 0.1), 0 4px 10px -4px rgba(15, 23, 42, 0.05);
+        }
+        @keyframes modalPop {
+            0% { opacity: 0; transform: scale(0.95) translateY(8px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .modal-animate {
+            animation: modalPop 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 9999px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans antialiased">
+<body class="text-slate-800 antialiased selection:bg-blue-600 selection:text-white">
 
     <!-- SETUP API SCREEN (แสดงเมื่อเปิดใช้งานครั้งแรกเพื่อป้องกัน URL หลุดใน GitHub) -->
-    <div id="setupApiScreen" class="fixed inset-0 bg-slate-900 flex items-center justify-center z-50 p-4 hidden">
-        <div class="bg-white rounded-3xl p-8 w-full max-w-md text-center space-y-5 shadow-2xl border border-slate-100">
-            <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-2xl mx-auto flex items-center justify-center text-2xl font-bold">⚙️</div>
+    <div id="setupApiScreen" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md flex items-center justify-center z-50 p-4 hidden">
+        <div class="bg-white rounded-3xl p-8 w-full max-w-md text-center space-y-5 shadow-2xl border border-slate-100 modal-animate">
+            <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 text-white rounded-2xl mx-auto flex items-center justify-center shadow-lg shadow-blue-500/30">
+                <i data-lucide="database" class="w-8 h-8"></i>
+            </div>
             <div>
-                <h2 class="text-xl font-bold text-slate-900">เชื่อมต่อฐานข้อมูล Google Sheets</h2>
+                <h2 class="text-xl font-extrabold text-slate-900">เชื่อมต่อฐานข้อมูล Google Sheets</h2>
                 <p class="text-xs text-slate-400 mt-1">กรุณากรอก URL ของ Google Apps Script Web App</p>
             </div>
             <div class="space-y-3">
-                <input type="text" id="setupScriptUrl" placeholder="https://script.google.com/macros/s/.../exec" class="w-full text-xs px-3.5 py-3 border border-slate-200 rounded-xl outline-none focus:border-blue-500">
-                <p class="text-[10px] text-slate-500 text-left bg-slate-50 p-3 rounded-lg">💡 URL นี้จะถูกบันทึกไว้ในเบราว์เซอร์เครื่องนี้ของคุณคนเดียวอย่างปลอดภัย เมื่อนำโค้ดขึ้น GitHub แบบ Public คนอื่นจะไม่เห็น URL ส่วนตัวของคุณ</p>
+                <input type="text" id="setupScriptUrl" placeholder="https://script.google.com/macros/s/.../exec" class="w-full text-xs px-4 py-3 border border-slate-200 rounded-xl outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition">
+                <div class="text-[11px] text-slate-500 text-left bg-slate-50 p-3.5 rounded-xl border border-slate-200/70 flex gap-2.5 items-start">
+                    <i data-lucide="shield-check" class="w-4 h-4 text-emerald-600 shrink-0 mt-0.5"></i>
+                    <span>URL นี้จะถูกบันทึกไว้ในเบราว์เซอร์เครื่องนี้ของคุณคนเดียวอย่างปลอดภัย เมื่อนำโค้ดขึ้น GitHub แบบ Public คนอื่นจะไม่เห็น URL ส่วนตัวของคุณ</span>
+                </div>
             </div>
-            <button onclick="saveSetupApi()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-2xl font-semibold transition cursor-pointer">บันทึกและเข้าสู่ระบบ</button>
+            <button onclick="saveSetupApi()" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-3 rounded-2xl font-semibold shadow-lg shadow-blue-600/25 transition cursor-pointer">
+                บันทึกและเข้าสู่ระบบ
+            </button>
         </div>
     </div>
 
     <!-- LOGIN SCREEN (PIN) -->
-    <div id="loginScreen" class="fixed inset-0 bg-slate-900 flex items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-3xl p-8 w-full max-w-sm text-center space-y-6 shadow-2xl">
-            <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-2xl mx-auto flex items-center justify-center text-2xl font-bold">🔒</div>
-            <div>
-                <h2 class="text-xl font-bold">ใส่ PIN ล็อกอิน</h2>
-                <p class="text-xs text-slate-400 mt-1">กรุณากรอกรหัสผ่าน (เริ่มต้น 1234)</p>
+    <div id="loginScreen" class="fixed inset-0 bg-slate-950 flex items-center justify-center z-50 p-4 relative overflow-hidden">
+        <!-- Decoration Glow -->
+        <div class="absolute -top-32 -left-32 w-96 h-96 bg-blue-600/20 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute -bottom-32 -right-32 w-96 h-96 bg-rose-600/20 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="bg-white/95 backdrop-blur-xl rounded-3xl p-8 w-full max-w-sm text-center space-y-6 shadow-2xl border border-white/20 modal-animate relative z-10">
+            <div class="w-16 h-16 bg-gradient-to-br from-blue-600 to-indigo-600 text-white rounded-2xl mx-auto flex items-center justify-center shadow-lg shadow-blue-600/30">
+                <i data-lucide="lock" class="w-8 h-8"></i>
             </div>
-            <input type="password" id="userPin" maxlength="4" onkeydown="if(event.key==='Enter')checkPin()" class="w-40 text-center tracking-widest text-2xl py-2 border-2 border-slate-200 rounded-2xl focus:border-blue-500 outline-none mx-auto block" placeholder="••••">
-            <button onclick="checkPin()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-2xl font-semibold transition cursor-pointer">เข้าสู่ระบบ</button>
-            <button onclick="resetSavedApi()" class="w-full text-xs text-slate-400 hover:text-slate-600 cursor-pointer pt-2">⚙️ ตั้งค่า / เปลี่ยน URL เชื่อมต่อ API</button>
+            <div>
+                <h2 class="text-xl font-extrabold text-slate-900">ใส่ PIN ล็อกอิน</h2>
+                <p class="text-xs text-slate-400 mt-1">กรุณากรอกรหัสผ่านเพื่อเข้าใช้งาน (เริ่มต้น 1234)</p>
+            </div>
+            <input type="password" id="userPin" maxlength="4" onkeydown="if(event.key==='Enter')checkPin()" class="w-44 text-center tracking-[0.5em] text-2xl font-bold py-2.5 border-2 border-slate-200 rounded-2xl focus:border-blue-600 focus:ring-4 focus:ring-blue-500/15 outline-none mx-auto block transition" placeholder="••••">
+            <button onclick="checkPin()" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-3 rounded-2xl font-semibold shadow-lg shadow-blue-600/25 transition cursor-pointer flex items-center justify-center gap-2">
+                <span>เข้าสู่ระบบ</span>
+                <i data-lucide="arrow-right" class="w-4 h-4"></i>
+            </button>
+            <button onclick="resetSavedApi()" class="w-full text-xs text-slate-400 hover:text-slate-600 cursor-pointer pt-1 flex items-center justify-center gap-1.5 transition">
+                <i data-lucide="settings" class="w-3.5 h-3.5"></i>
+                <span>ตั้งค่า / เปลี่ยน URL เชื่อมต่อ API</span>
+            </button>
         </div>
     </div>
 
     <!-- MAIN APP -->
-    <div id="mainScreen" class="hidden min-h-screen pb-14">
+    <div id="mainScreen" class="hidden min-h-screen pb-16">
         <!-- HEADER & TOP QUICK ACTIONS -->
-        <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs">
-            <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-3">
+        <header class="bg-white/85 backdrop-blur-lg border-b border-slate-200/80 sticky top-0 z-30 shadow-2xs">
+            <div class="max-w-7xl mx-auto px-4 py-3.5 flex flex-wrap justify-between items-center gap-3">
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-blue-600 text-white rounded-xl flex items-center justify-center font-bold text-lg">💰</div>
+                    <div class="w-11 h-11 bg-gradient-to-br from-blue-600 to-indigo-600 text-white rounded-2xl flex items-center justify-center shadow-md shadow-blue-600/25">
+                        <i data-lucide="wallet" class="w-5 h-5"></i>
+                    </div>
                     <div>
-                        <h1 class="font-bold text-slate-800 text-base sm:text-lg">Win Wealth Manager Pro</h1>
-                        <p class="text-xs text-slate-400">ระบบบริหารการเงิน บัตรเครดิต หนี้สิน และการลงทุน</p>
+                        <div class="flex items-center gap-2">
+                            <h1 class="font-extrabold text-slate-900 text-base sm:text-lg tracking-tight">Win Wealth Manager</h1>
+                            <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 border border-blue-200/60">Pro</span>
+                        </div>
+                        <p class="text-xs text-slate-400">ระบบบริหารความมั่งคั่ง บัตรเครดิตวงเงินร่วม และพอร์ตการลงทุน</p>
                     </div>
                 </div>
                 <div class="flex flex-wrap items-center gap-2">
-                    <button onclick="openTxModal('Income')" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold cursor-pointer">📥 บันทึกรายรับ</button>
-                    <button onclick="openTxModal('Expense')" class="px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-semibold cursor-pointer">📤 บันทึกรายจ่าย / รูดบัตร</button>
-                    <button onclick="openTxModal('Transfer')" class="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold cursor-pointer">⇄ โอนเงิน</button>
-                    <button onclick="fetchData()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 rounded-xl text-xs font-medium text-slate-600 cursor-pointer">🔄 รีเฟรช</button>
+                    <button onclick="openTxModal('Income')" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold shadow-sm shadow-emerald-600/20 transition hover:-translate-y-0.5 cursor-pointer flex items-center gap-1.5">
+                        <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i>
+                        <span>บันทึกรายรับ</span>
+                    </button>
+                    <button onclick="openTxModal('Expense')" class="px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-semibold shadow-sm shadow-rose-600/20 transition hover:-translate-y-0.5 cursor-pointer flex items-center gap-1.5">
+                        <i data-lucide="credit-card" class="w-3.5 h-3.5"></i>
+                        <span>บันทึกรายจ่าย / รูดบัตร</span>
+                    </button>
+                    <button onclick="openTxModal('Transfer')" class="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold shadow-sm shadow-blue-600/20 transition hover:-translate-y-0.5 cursor-pointer flex items-center gap-1.5">
+                        <i data-lucide="arrow-left-right" class="w-3.5 h-3.5"></i>
+                        <span>โอนเงิน</span>
+                    </button>
+                    <button onclick="fetchData()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 rounded-xl text-xs font-semibold text-slate-600 transition cursor-pointer flex items-center gap-1.5" title="รีเฟรชข้อมูล">
+                        <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                        <span class="hidden sm:inline">รีเฟรช</span>
+                    </button>
                 </div>
             </div>
         </header>
 
         <main class="max-w-7xl mx-auto px-4 py-6 space-y-6">
-            <!-- NET WORTH CARD -->
-            <div class="bg-slate-900 text-white rounded-3xl p-6 sm:p-8 shadow-xl relative overflow-hidden">
-                <div class="relative z-10 space-y-2">
-                    <span class="text-xs uppercase tracking-wider text-slate-400 font-semibold">ความมั่งคั่งสุทธิ (ทรัพย์สินรวม - หนี้สินและบัตรเครดิตทั้งหมด)</span>
-                    <div id="netWorthDisplay" class="text-3xl sm:text-4xl font-extrabold tracking-tight">฿0.00</div>
-                    <div class="flex flex-wrap gap-4 sm:gap-6 pt-2 text-xs text-slate-300">
-                        <span>ทรัพย์สินรวม: <strong id="totalAssets" class="text-emerald-400">฿0.00</strong></span>
-                        <span>ยอดบัตรเครดิต/PayLater รวม (ปลายเดือน+ผ่อน): <strong id="totalCreditAll" class="text-amber-400">฿0.00</strong></span>
-                        <span>หนี้สินอื่นๆ (บ้าน/รถ/สินเชื่อ): <strong id="totalOtherDebts" class="text-rose-400">฿0.00</strong></span>
+            <!-- NET WORTH HERO CARD -->
+            <div class="bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950 text-white rounded-3xl p-6 sm:p-8 shadow-xl relative overflow-hidden border border-slate-800">
+                <!-- SVG Wave & Glow Overlay -->
+                <div class="absolute -right-16 -top-16 w-72 h-72 bg-blue-500/15 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="absolute right-24 -bottom-24 w-72 h-72 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                <svg class="absolute right-0 bottom-0 opacity-10 w-80 h-auto pointer-events-none select-none" viewBox="0 0 200 200" fill="none">
+                    <circle cx="150" cy="150" r="120" stroke="white" stroke-width="2" stroke-dasharray="6 6"/>
+                    <circle cx="150" cy="150" r="85" stroke="white" stroke-width="1.5"/>
+                    <circle cx="150" cy="150" r="50" stroke="white" stroke-width="1"/>
+                </svg>
+
+                <div class="relative z-10 space-y-5">
+                    <div class="flex flex-wrap justify-between items-start gap-4">
+                        <div class="space-y-1.5">
+                            <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/10 backdrop-blur-md text-[11px] font-semibold text-blue-300 border border-white/10">
+                                <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                                <span>ความมั่งคั่งสุทธิ (Net Worth Overview)</span>
+                            </div>
+                            <div id="netWorthDisplay" class="text-3xl sm:text-5xl font-extrabold tracking-tight pt-1">฿0.00</div>
+                        </div>
+                        <div class="text-right hidden sm:block">
+                            <span class="text-[11px] text-slate-400 block">สัดส่วนสุขภาพการเงิน</span>
+                            <span id="assetRatioText" class="text-xs font-bold text-emerald-400">ทรัพย์สิน 100% : หนี้สิน 0%</span>
+                        </div>
+                    </div>
+
+                    <!-- Mini Health Progress Bar (Assets vs Liabilities) -->
+                    <div class="space-y-1.5">
+                        <div class="w-full h-2 bg-white/10 rounded-full overflow-hidden flex p-0.5 gap-0.5">
+                            <div id="assetRatioBar" class="h-full bg-gradient-to-r from-emerald-400 to-teal-400 rounded-full transition-all duration-500" style="width: 100%"></div>
+                        </div>
+                    </div>
+
+                    <!-- 3 Pill Boxes -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+                        <div class="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-3.5 flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+                                <i data-lucide="trending-up" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <div class="text-[11px] text-slate-400">ทรัพย์สินรวม (เงินสด+ลงทุน)</div>
+                                <strong id="totalAssets" class="text-base sm:text-lg font-extrabold text-emerald-400">฿0.00</strong>
+                            </div>
+                        </div>
+                        <div class="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-3.5 flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
+                                <i data-lucide="credit-card" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <div class="text-[11px] text-slate-400">ยอดบัตรเครดิต/PayLater รวม</div>
+                                <strong id="totalCreditAll" class="text-base sm:text-lg font-extrabold text-amber-400">฿0.00</strong>
+                            </div>
+                        </div>
+                        <div class="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-3.5 flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center shrink-0">
+                                <i data-lucide="landmark" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <div class="text-[11px] text-slate-400">หนี้สินอื่นๆ (บ้าน/รถ/สินเชื่อ)</div>
+                                <strong id="totalOtherDebts" class="text-base sm:text-lg font-extrabold text-rose-400">฿0.00</strong>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="absolute right-[-20px] bottom-[-20px] opacity-10 text-9xl font-bold select-none">💎</div>
             </div>
 
             <!-- 1. BANK ACCOUNTS & CASH -->
-            <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 space-y-4">
+            <div class="bg-white rounded-3xl p-6 shadow-xs border border-slate-200/80 space-y-4">
                 <div class="flex flex-wrap justify-between items-center gap-2">
-                    <div>
-                        <h2 class="font-bold text-slate-800 text-sm sm:text-base">🏦 บัญชีธนาคาร & เงินสด</h2>
-                        <p class="text-xs text-slate-400">ยอดเงินคงเหลือรวม: <strong id="bankTotalText" class="text-emerald-600">฿0.00</strong></p>
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100">
+                            <i data-lucide="building-2" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <h2 class="font-bold text-slate-800 text-sm sm:text-base">บัญชีธนาคาร & เงินสด</h2>
+                            <p class="text-xs text-slate-400">สภาพคล่องคงเหลือรวม: <strong id="bankTotalText" class="text-emerald-600 font-bold">฿0.00</strong></p>
+                        </div>
                     </div>
-                    <button onclick="openAddAccountModal('Bank')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-1.5 rounded-xl text-xs font-semibold cursor-pointer">+ เพิ่มบัญชีธนาคาร/เงินสด</button>
+                    <button onclick="openAddAccountModal('Bank')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-xl text-xs font-semibold shadow-xs transition hover:-translate-y-0.5 cursor-pointer flex items-center gap-1.5">
+                        <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                        <span>เพิ่มบัญชีธนาคาร/เงินสด</span>
+                    </button>
                 </div>
                 <div id="bankAccountsContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"></div>
             </div>
 
-            <!-- 2. CREDIT CARDS & PAYLATER (รองรับวงเงินร่วม Shared Limit) -->
-            <div class="bg-white rounded-3xl p-6 shadow-sm border border-rose-200 space-y-4">
+            <!-- 2. CREDIT CARDS & PAYLATER (VISUAL CREDIT CARD + SHARED LIMIT) -->
+            <div class="bg-white rounded-3xl p-6 shadow-xs border border-slate-200/80 space-y-4">
                 <div class="flex flex-wrap justify-between items-center gap-2">
-                    <div>
-                        <h2 class="font-bold text-rose-700 text-sm sm:text-base">💳 บัตรเครดิต & PayLater (รองรับวงเงินร่วม Shared Limit)</h2>
-                        <p class="text-xs text-slate-400">ยอดใช้วงเงินรวมทุกบัตร: <strong id="creditTotalText" class="text-rose-600">฿0.00</strong> (บันทึกยอดใช้จ่ายได้ที่ปุ่ม "📤 บันทึกรายจ่าย / รูดบัตร" ด้านบน)</p>
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-9 h-9 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center border border-rose-100">
+                            <i data-lucide="credit-card" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h2 class="font-bold text-slate-800 text-sm sm:text-base">บัตรเครดิต & PayLater</h2>
+                                <span class="text-[10px] bg-rose-50 text-rose-600 border border-rose-200 px-2 py-0.5 rounded-full font-semibold">Shared Limit Ready</span>
+                            </div>
+                            <p class="text-xs text-slate-400">ยอดใช้วงเงินรวมทุกบัตร: <strong id="creditTotalText" class="text-rose-600 font-bold">฿0.00</strong></p>
+                        </div>
                     </div>
-                    <button onclick="openAddAccountModal('CreditCard')" class="bg-rose-600 hover:bg-rose-700 text-white px-3.5 py-1.5 rounded-xl text-xs font-semibold cursor-pointer">+ เพิ่มบัตรเครดิต / PayLater</button>
+                    <button onclick="openAddAccountModal('CreditCard')" class="bg-rose-600 hover:bg-rose-700 text-white px-3.5 py-2 rounded-xl text-xs font-semibold shadow-xs transition hover:-translate-y-0.5 cursor-pointer flex items-center gap-1.5">
+                        <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                        <span>เพิ่มบัตรเครดิต / PayLater</span>
+                    </button>
                 </div>
-                <div id="creditCardsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+                <div id="creditCardsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
             </div>
 
             <!-- 3. DEBTS & INSTALLMENTS -->
-            <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 space-y-4">
+            <div class="bg-white rounded-3xl p-6 shadow-xs border border-slate-200/80 space-y-4">
                 <div class="flex flex-wrap justify-between items-center gap-2">
-                    <div>
-                        <h2 class="font-bold text-slate-800 text-sm sm:text-base">📋 รายการหนี้สิน & ค่างวดผ่อนชำระ (แยกตามบัตร และหมวดบ้าน / รถ / อื่นๆ)</h2>
-                        <p class="text-xs text-slate-400">สามารถกดปุ่ม "💸 จ่ายงวดรวม" ของแต่ละบัตรเพื่อเลือกจ่ายหลายรายการพร้อมกัน หรือจ่ายรายตัวได้</p>
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center border border-amber-100">
+                            <i data-lucide="calendar-clock" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <h2 class="font-bold text-slate-800 text-sm sm:text-base">รายการหนี้สิน & ค่างวดผ่อนชำระ</h2>
+                            <p class="text-xs text-slate-400">แยกตามบัตรเครดิต และหมวดสินเชื่อบ้าน / รถ / อื่นๆ พร้อมระบบจ่ายงวดรวม</p>
+                        </div>
                     </div>
-                    <button onclick="openAddDebtModal()" class="bg-slate-800 hover:bg-slate-900 text-white px-3.5 py-1.5 rounded-xl text-xs font-semibold cursor-pointer">+ เพิ่มหนี้สิน (บ้าน/รถ/ผ่อนย้อนหลัง)</button>
+                    <button onclick="openAddDebtModal()" class="bg-slate-800 hover:bg-slate-900 text-white px-3.5 py-2 rounded-xl text-xs font-semibold shadow-xs transition hover:-translate-y-0.5 cursor-pointer flex items-center gap-1.5">
+                        <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                        <span>เพิ่มหนี้สิน (บ้าน/รถ/ผ่อนย้อนหลัง)</span>
+                    </button>
                 </div>
                 <div id="debtsContainer" class="space-y-5"></div>
             </div>
 
             <!-- 4. INVESTMENTS -->
-            <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 space-y-4">
+            <div class="bg-white rounded-3xl p-6 shadow-xs border border-slate-200/80 space-y-4">
                 <div class="flex flex-wrap justify-between items-center gap-2">
-                    <div>
-                        <h2 class="font-bold text-slate-800 text-sm sm:text-base">📈 พอร์ตการลงทุน (หุ้น, กองทุน, คริปโต, ทองคำ)</h2>
-                        <div class="flex flex-wrap gap-4 text-xs mt-1">
-                            <span class="text-slate-500">ต้นทุนรวม: <strong id="invTotalCost" class="text-slate-700">฿0.00</strong></span>
-                            <span class="text-slate-500">มูลค่าปัจจุบันรวม: <strong id="invTotalVal" class="text-slate-900">฿0.00</strong></span>
-                            <span class="text-slate-500">กำไร/ขาดทุนรวม: <strong id="invTotalProfit" class="text-emerald-600">+฿0.00 (0.00%)</strong></span>
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100">
+                            <i data-lucide="line-chart" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <h2 class="font-bold text-slate-800 text-sm sm:text-base">พอร์ตการลงทุน (หุ้น, กองทุน, คริปโต, ทองคำ)</h2>
+                            <div class="flex flex-wrap gap-3 text-xs mt-0.5">
+                                <span class="text-slate-500">ต้นทุนรวม: <strong id="invTotalCost" class="text-slate-700">฿0.00</strong></span>
+                                <span class="text-slate-500">มูลค่าปัจจุบัน: <strong id="invTotalVal" class="text-slate-900">฿0.00</strong></span>
+                                <span class="text-slate-500">กำไร/ขาดทุน: <strong id="invTotalProfit" class="text-emerald-600">+฿0.00 (0.00%)</strong></span>
+                            </div>
                         </div>
                     </div>
-                    <button onclick="openAddInvModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-3.5 py-1.5 rounded-xl text-xs font-semibold cursor-pointer">+ เพิ่มรายการลงทุน</button>
+                    <button onclick="openAddInvModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-3.5 py-2 rounded-xl text-xs font-semibold shadow-xs transition hover:-translate-y-0.5 cursor-pointer flex items-center gap-1.5">
+                        <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                        <span>เพิ่มรายการลงทุน</span>
+                    </button>
                 </div>
                 <div id="investmentsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
             </div>
 
             <!-- 5. MONTHLY INCOME / EXPENSE SUMMARY & CHART -->
-            <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 space-y-5">
+            <div class="bg-white rounded-3xl p-6 shadow-xs border border-slate-200/80 space-y-5">
                 <div class="flex flex-wrap justify-between items-center gap-3">
-                    <div>
-                        <h2 class="font-bold text-slate-800 text-sm sm:text-base">📅 สรุปรายรับ - รายจ่าย รายเดือน</h2>
-                        <p class="text-xs text-slate-400">เลือกเดือนเพื่อดูสรุปยอดรายรับ รายจ่าย และสัดส่วนค่าใช้จ่ายประจำเดือน</p>
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100">
+                            <i data-lucide="pie-chart" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <h2 class="font-bold text-slate-800 text-sm sm:text-base">สรุปรายรับ - รายจ่าย รายเดือน</h2>
+                            <p class="text-xs text-slate-400">คลิกเลือกเดือนเพื่อดูสถิติและสัดส่วนค่าใช้จ่ายประจำเดือน</p>
+                        </div>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <label class="text-xs text-slate-500 font-medium">เลือกเดือน:</label>
-                        <select id="monthFilter" onchange="renderMonthlySummary()" class="border border-slate-200 rounded-xl px-3 py-1.5 text-xs bg-white font-semibold text-slate-700 outline-none"></select>
+                    <div class="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200/80">
+                        <i data-lucide="calendar" class="w-3.5 h-3.5 text-slate-400"></i>
+                        <label class="text-xs text-slate-500 font-medium">เดือน:</label>
+                        <select id="monthFilter" onchange="renderMonthlySummary()" class="text-xs bg-transparent font-bold text-slate-700 outline-none cursor-pointer"></select>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div class="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-100">
-                        <div class="text-xs text-emerald-700 font-medium">📥 รายรับรวมเดือนที่เลือก</div>
-                        <div id="monthlyIncomeText" class="text-xl font-extrabold text-emerald-600 mt-1">฿0.00</div>
+                    <div class="p-4 rounded-2xl bg-gradient-to-br from-emerald-50/90 to-teal-50/50 border border-emerald-100 flex items-center justify-between">
+                        <div>
+                            <div class="text-xs text-emerald-700 font-medium">รายรับรวมเดือนที่เลือก</div>
+                            <div id="monthlyIncomeText" class="text-xl font-extrabold text-emerald-600 mt-1">฿0.00</div>
+                        </div>
+                        <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
+                            <i data-lucide="arrow-down-left" class="w-5 h-5"></i>
+                        </div>
                     </div>
-                    <div class="p-4 rounded-2xl bg-rose-50/70 border border-rose-100">
-                        <div class="text-xs text-rose-700 font-medium">📤 รายจ่ายรวมเดือนที่เลือก</div>
-                        <div id="monthlyExpenseText" class="text-xl font-extrabold text-rose-600 mt-1">฿0.00</div>
+                    <div class="p-4 rounded-2xl bg-gradient-to-br from-rose-50/90 to-pink-50/50 border border-rose-100 flex items-center justify-between">
+                        <div>
+                            <div class="text-xs text-rose-700 font-medium">รายจ่ายรวมเดือนที่เลือก</div>
+                            <div id="monthlyExpenseText" class="text-xl font-extrabold text-rose-600 mt-1">฿0.00</div>
+                        </div>
+                        <div class="w-10 h-10 rounded-xl bg-rose-500/10 text-rose-600 flex items-center justify-center">
+                            <i data-lucide="arrow-up-right" class="w-5 h-5"></i>
+                        </div>
                     </div>
-                    <div class="p-4 rounded-2xl bg-blue-50/70 border border-blue-100">
-                        <div class="text-xs text-blue-700 font-medium">⚖️ คงเหลือสุทธิ (รายรับ - รายจ่าย)</div>
-                        <div id="monthlyNetText" class="text-xl font-extrabold text-blue-600 mt-1">฿0.00</div>
+                    <div class="p-4 rounded-2xl bg-gradient-to-br from-blue-50/90 to-indigo-50/50 border border-blue-100 flex items-center justify-between">
+                        <div>
+                            <div class="text-xs text-blue-700 font-medium">คงเหลือสุทธิ (รับ - จ่าย)</div>
+                            <div id="monthlyNetText" class="text-xl font-extrabold text-blue-600 mt-1">฿0.00</div>
+                        </div>
+                        <div class="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center">
+                            <i data-lucide="scale" class="w-5 h-5"></i>
+                        </div>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-center pt-2">
-                    <div class="overflow-x-auto border border-slate-100 rounded-2xl">
+                    <div class="overflow-x-auto border border-slate-200/70 rounded-2xl">
                         <table class="w-full text-left text-xs">
                             <thead>
-                                <tr class="bg-slate-50 text-slate-500 border-b border-slate-100">
-                                    <th class="py-2.5 px-3">เดือน/ปี</th>
-                                    <th class="py-2.5 px-3 text-right text-emerald-600">รายรับ</th>
-                                    <th class="py-2.5 px-3 text-right text-rose-600">รายจ่าย</th>
-                                    <th class="py-2.5 px-3 text-right">คงเหลือสุทธิ</th>
+                                <tr class="bg-slate-50 text-slate-500 border-b border-slate-200/70">
+                                    <th class="py-3 px-3.5 font-semibold">เดือน/ปี</th>
+                                    <th class="py-3 px-3.5 text-right text-emerald-600 font-semibold">รายรับ</th>
+                                    <th class="py-3 px-3.5 text-right text-rose-600 font-semibold">รายจ่าย</th>
+                                    <th class="py-3 px-3.5 text-right font-semibold">คงเหลือสุทธิ</th>
                                 </tr>
                             </thead>
                             <tbody id="monthlyTableBody" class="divide-y divide-slate-100"></tbody>
                         </table>
                     </div>
-                    <div class="h-52 relative flex flex-col items-center justify-center">
-                        <div class="text-xs font-semibold text-slate-500 mb-2">📊 สัดส่วนรายจ่ายตามหมวดหมู่</div>
+                    <div class="h-56 relative flex flex-col items-center justify-center bg-slate-50/60 rounded-2xl p-4 border border-slate-100">
+                        <div class="text-xs font-semibold text-slate-500 mb-2">สัดส่วนรายจ่ายตามหมวดหมู่</div>
                         <div class="w-full h-44 relative">
                             <canvas id="expenseChart"></canvas>
                         </div>
@@ -178,27 +354,36 @@
                 </div>
             </div>
 
-            <!-- 6. TRANSACTIONS TABLE -->
-            <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 space-y-4">
+            <!-- 6. TRANSACTIONS FEED / TABLE -->
+            <div class="bg-white rounded-3xl p-6 shadow-xs border border-slate-200/80 space-y-4">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                    <div>
-                        <h2 class="font-bold text-slate-800 text-sm sm:text-base">📜 ประวัติรายการเคลื่อนไหว (เรียงตามวันที่)</h2>
-                        <p class="text-xs text-slate-400">แสดงรายการรับ-จ่ายเรียงตามวันที่ทำรายการ สามารถกดแก้ไขหรือลบได้</p>
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-9 h-9 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center border border-slate-200/80">
+                            <i data-lucide="history" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <h2 class="font-bold text-slate-800 text-sm sm:text-base">ประวัติรายการเคลื่อนไหว</h2>
+                            <p class="text-xs text-slate-400">เรียงตามวันที่ทำรายการ พร้อมไอคอนแยกประเภทรายการชัดเจน</p>
+                        </div>
                     </div>
                     <div class="flex items-center gap-2 w-full sm:w-auto">
-                        <button onclick="toggleTxSortOrder()" id="btnSortDate" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-medium whitespace-nowrap cursor-pointer">📅 เรียง: ล่าสุด ⬇</button>
-                        <input type="text" id="searchInput" oninput="renderTable()" placeholder="🔍 ค้นหารายการ..." class="border border-slate-200 rounded-xl px-3 py-1.5 text-xs w-full sm:w-56 outline-none">
+                        <button onclick="toggleTxSortOrder()" id="btnSortDate" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold whitespace-nowrap cursor-pointer transition">
+                            📅 เรียง: ล่าสุด ⬇
+                        </button>
+                        <div class="relative w-full sm:w-60">
+                            <input type="text" id="searchInput" oninput="renderTable()" placeholder="ค้นหาหมวดหมู่ หรือโน้ต..." class="border border-slate-200 rounded-xl pl-3.5 pr-3 py-2 text-xs w-full outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 transition">
+                        </div>
                     </div>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-xs">
                         <thead>
-                            <tr class="border-b border-slate-100 text-slate-400">
-                                <th class="py-2.5 px-2">วันที่</th>
-                                <th class="py-2.5 px-2">รายการ / หมวดหมู่</th>
-                                <th class="py-2.5 px-2">บัญชี / บัตร</th>
-                                <th class="py-2.5 px-2 text-right">จำนวนเงิน</th>
-                                <th class="py-2.5 px-2 text-center">จัดการ</th>
+                            <tr class="border-b border-slate-200/70 text-slate-400">
+                                <th class="py-3 px-2.5 font-semibold">วันที่</th>
+                                <th class="py-3 px-2.5 font-semibold">รายการ / หมวดหมู่</th>
+                                <th class="py-3 px-2.5 font-semibold">บัญชี / บัตร</th>
+                                <th class="py-3 px-2.5 text-right font-semibold">จำนวนเงิน</th>
+                                <th class="py-3 px-2.5 text-center font-semibold">จัดการ</th>
                             </tr>
                         </thead>
                         <tbody id="txTableBody" class="divide-y divide-slate-100"></tbody>
@@ -209,100 +394,100 @@
     </div>
 
     <!-- MODAL 1: ACCOUNT / CREDIT CARD (พร้อมระบบแชร์วงเงินร่วม) -->
-    <div id="accountModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-2xl p-6 w-full max-w-md space-y-4 shadow-2xl">
-            <h3 id="accountModalTitle" class="text-lg font-bold text-slate-800">จัดการบัญชี / บัตร</h3>
-            <form onsubmit="submitAccount(event)" class="space-y-3">
+    <div id="accountModal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-xs hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-3xl p-6 w-full max-w-md space-y-4 shadow-2xl border border-slate-100 modal-animate">
+            <h3 id="accountModalTitle" class="text-lg font-extrabold text-slate-800">จัดการบัญชี / บัตร</h3>
+            <form onsubmit="submitAccount(event)" class="space-y-3.5">
                 <input type="hidden" id="accId">
                 <div>
-                    <label class="block text-xs text-slate-500 mb-1">ประเภท</label>
-                    <select id="accType" onchange="toggleAccountModalFields()" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white">
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">ประเภท</label>
+                    <select id="accType" onchange="toggleAccountModalFields()" class="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm bg-white outline-none focus:border-blue-500">
                         <option value="Bank">🏦 บัญชีธนาคาร</option>
                         <option value="Cash">💵 เงินสด</option>
                         <option value="CreditCard">💳 บัตรเครดิต / PayLater</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs text-slate-500 mb-1">ชื่อบัญชี / ชื่อบัตร หรือ PayLater</label>
-                    <input type="text" id="accName" required placeholder="เช่น กสิกรไทย, บัตร KTC Visa, SPayLater" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm">
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">ชื่อบัญชี / ชื่อบัตร หรือ PayLater</label>
+                    <input type="text" id="accName" required placeholder="เช่น กสิกรไทย, บัตร KTC Visa, SPayLater" class="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm outline-none focus:border-blue-500">
                 </div>
                 <div id="accBalanceGroup">
-                    <label class="block text-xs text-slate-500 mb-1" id="accBalanceLabel">ยอดเงินคงเหลือในบัญชี (บาท)</label>
-                    <input type="number" id="accBalance" step="0.01" value="0" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm font-bold">
+                    <label class="block text-xs font-semibold text-slate-600 mb-1" id="accBalanceLabel">ยอดเงินคงเหลือในบัญชี (บาท)</label>
+                    <input type="number" id="accBalance" step="0.01" value="0" class="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm font-bold outline-none focus:border-blue-500">
                 </div>
                 <div id="ccExtraFields" class="hidden space-y-3 pt-2 border-t border-slate-100">
-                    <div class="p-2.5 bg-blue-50 text-blue-700 rounded-xl text-[11px]" id="ccAddNotice">
-                        💡 การเพิ่มบัตรไม่ต้องใส่ยอดเงินที่ต้องจ่ายเริ่มต้น โดยให้ไปบันทึกยอดใช้จ่ายที่ปุ่ม <strong>"📤 บันทึกรายจ่าย / รูดบัตร"</strong> แทน
+                    <div class="p-3 bg-blue-50/80 text-blue-700 rounded-xl text-[11px] border border-blue-100" id="ccAddNotice">
+                        💡 การเพิ่มบัตรไม่ต้องใส่ยอดเงินที่ต้องจ่ายเริ่มต้น โดยให้ไปบันทึกยอดใช้จ่ายที่ปุ่ม <strong>"บันทึกรายจ่าย / รูดบัตร"</strong> แทน
                     </div>
 
                     <!-- เช็คบ็อกซ์แชร์วงเงินร่วม -->
-                    <div class="p-3 bg-rose-50/60 border border-rose-100 rounded-xl space-y-2">
-                        <label class="flex items-center gap-2 text-xs font-semibold text-rose-800 cursor-pointer">
-                            <input type="checkbox" id="accIsShared" onchange="toggleSharedLimitUI()" class="accent-rose-600 rounded">
+                    <div class="p-3.5 bg-rose-50/60 border border-rose-200/70 rounded-2xl space-y-2">
+                        <label class="flex items-center gap-2 text-xs font-bold text-rose-800 cursor-pointer">
+                            <input type="checkbox" id="accIsShared" onchange="toggleSharedLimitUI()" class="accent-rose-600 rounded w-4 h-4">
                             <span>🔗 ใช้วงเงินร่วมกับบัตรอื่น (Shared Limit)</span>
                         </label>
-                        <p class="text-[10px] text-slate-500">เช่น มีบัตร A และบัตร B ใช้วงเงินเดียวกัน เมื่อรูดบัตรใด วงเงินคงเหลือจะลดลงพร้อมกัน</p>
+                        <p class="text-[11px] text-slate-500 leading-relaxed">เช่น มีบัตร A และบัตร B ใช้วงเงินเดียวกัน เมื่อรูดบัตรใด วงเงินคงเหลือจะลดลงพร้อมกัน</p>
                         
                         <div id="accSharedSelectDiv" class="hidden pt-1">
-                            <label class="block text-[11px] font-medium text-slate-600 mb-1">เลือกบัตรหลักที่ต้องการใช้วงเงินร่วม:</label>
-                            <select id="accSharedParentId" class="w-full border border-rose-200 rounded-lg px-2.5 py-1.5 text-xs bg-white"></select>
+                            <label class="block text-[11px] font-semibold text-slate-700 mb-1">เลือกบัตรหลักที่ต้องการใช้วงเงินร่วม:</label>
+                            <select id="accSharedParentId" class="w-full border border-rose-200 rounded-xl px-3 py-2 text-xs bg-white font-semibold outline-none"></select>
                         </div>
                     </div>
 
                     <div id="accLimitGroup">
-                        <label class="block text-xs text-slate-500 mb-1" id="accLimitLabel">วงเงินเต็มของบัตร (บาท)</label>
-                        <input type="number" id="accLimit" step="0.01" placeholder="เช่น 20000" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm font-bold">
+                        <label class="block text-xs font-semibold text-slate-600 mb-1" id="accLimitLabel">วงเงินเต็มของบัตร (บาท)</label>
+                        <input type="number" id="accLimit" step="0.01" placeholder="เช่น 20000" class="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm font-bold outline-none focus:border-blue-500">
                     </div>
                     <div>
-                        <label class="block text-xs text-slate-500 mb-1">วันตัดรอบบิล / กำหนดชำระ</label>
-                        <input type="text" id="accDue" placeholder="เช่น ตัดรอบ 25 / จ่ายวันที่ 5" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm">
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">วันตัดรอบบิล / กำหนดชำระ</label>
+                        <input type="text" id="accDue" placeholder="เช่น ตัดรอบ 25 / จ่ายวันที่ 5" class="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm outline-none focus:border-blue-500">
                     </div>
                 </div>
-                <div class="flex justify-end gap-2 pt-2">
-                    <button type="button" onclick="closeModal('accountModal')" class="px-4 py-2 text-sm text-slate-500 cursor-pointer">ยกเลิก</button>
-                    <button type="submit" class="px-4 py-2 text-sm bg-blue-600 text-white rounded-xl font-medium cursor-pointer">บันทึก</button>
+                <div class="flex justify-end gap-2 pt-3">
+                    <button type="button" onclick="closeModal('accountModal')" class="px-4 py-2.5 text-xs font-semibold text-slate-500 hover:bg-slate-100 rounded-xl cursor-pointer transition">ยกเลิก</button>
+                    <button type="submit" class="px-5 py-2.5 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold shadow-md shadow-blue-600/20 cursor-pointer transition">บันทึกข้อมูล</button>
                 </div>
             </form>
         </div>
     </div>
 
     <!-- MODAL 2: TRANSACTION -->
-    <div id="txModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-2xl p-6 w-full max-w-md space-y-4 shadow-2xl max-h-[92vh] overflow-y-auto">
-            <h3 id="txModalTitle" class="text-lg font-bold text-slate-800">บันทึกรายการ</h3>
-            <form onsubmit="submitTransaction(event)" class="space-y-3">
+    <div id="txModal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-xs hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-3xl p-6 w-full max-w-md space-y-4 shadow-2xl max-h-[92vh] overflow-y-auto border border-slate-100 modal-animate">
+            <h3 id="txModalTitle" class="text-lg font-extrabold text-slate-800">บันทึกรายการ</h3>
+            <form onsubmit="submitTransaction(event)" class="space-y-3.5">
                 <input type="hidden" id="txId">
                 <input type="hidden" id="txType">
                 <div>
-                    <label class="block text-xs text-slate-500 mb-1">วันที่ทำรายการ</label>
-                    <input type="date" id="txDate" required class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm">
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">วันที่ทำรายการ</label>
+                    <input type="date" id="txDate" required class="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm outline-none focus:border-blue-500">
                 </div>
                 <div>
-                    <label class="block text-xs text-slate-500 mb-1" id="txAccountLabel">เลือกบัญชี / บัตรเครดิต</label>
-                    <select id="txAccount" onchange="onTxAccountChange()" required class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white"></select>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1" id="txAccountLabel">เลือกบัญชี / บัตรเครดิต</label>
+                    <select id="txAccount" onchange="onTxAccountChange()" required class="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm bg-white outline-none focus:border-blue-500"></select>
                 </div>
                 <div id="txTargetDiv" class="hidden">
-                    <label class="block text-xs text-slate-500 mb-1">โอนไปยังบัญชี</label>
-                    <select id="txTargetAccount" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white"></select>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">โอนไปยังบัญชี</label>
+                    <select id="txTargetAccount" class="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm bg-white outline-none focus:border-blue-500"></select>
                 </div>
 
                 <div>
-                    <label class="block text-xs text-slate-500 mb-1">หมวดหมู่ / ชื่อรายการ</label>
-                    <input type="text" id="txCategory" required placeholder="เช่น ค่าอาหาร, ช้อปปิ้ง" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm">
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">หมวดหมู่ / ชื่อรายการ</label>
+                    <input type="text" id="txCategory" required placeholder="เช่น ค่าอาหาร, ช้อปปิ้ง, เงินเดือน" class="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm outline-none focus:border-blue-500">
                 </div>
                 <div>
-                    <label class="block text-xs text-slate-500 mb-1" id="txAmountLabel">จำนวนเงิน (บาท)</label>
-                    <input type="number" id="txAmount" step="0.01" min="0.01" required oninput="onTxAmountInput()" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm font-bold">
+                    <label class="block text-xs font-semibold text-slate-600 mb-1" id="txAmountLabel">จำนวนเงิน (บาท)</label>
+                    <input type="number" id="txAmount" step="0.01" min="0.01" required oninput="onTxAmountInput()" class="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm font-bold outline-none focus:border-blue-500">
                 </div>
 
-                <!-- 💳 กล่องตัวเลือกเมื่อรูดบัตรเครดิต/PayLater -->
-                <div id="ccInstallmentBox" class="hidden p-3.5 bg-rose-50/70 border border-rose-200 rounded-2xl space-y-3">
+                <!-- กล่องตัวเลือกเมื่อรูดบัตรเครดิต/PayLater -->
+                <div id="ccInstallmentBox" class="hidden p-4 bg-rose-50/70 border border-rose-200 rounded-2xl space-y-3">
                     <label class="block text-xs font-bold text-rose-800">💳 รูปแบบการชำระของบัตรเครดิต / PayLater</label>
                     <div class="grid grid-cols-2 gap-2">
-                        <label class="flex items-center p-2 bg-white rounded-xl border border-rose-100 text-xs font-semibold cursor-pointer">
-                            <input type="radio" name="ccMode" value="full" checked onchange="toggleCcInputBox()" class="mr-2 accent-rose-600"> ชำระปลายเดือนครั้งเดียว
+                        <label class="flex items-center p-2.5 bg-white rounded-xl border border-rose-100 text-xs font-semibold cursor-pointer">
+                            <input type="radio" name="ccMode" value="full" checked onchange="toggleCcInputBox()" class="mr-2 accent-rose-600"> ชำระปลายเดือน
                         </label>
-                        <label class="flex items-center p-2 bg-white rounded-xl border border-rose-100 text-xs font-semibold text-rose-700 cursor-pointer">
+                        <label class="flex items-center p-2.5 bg-white rounded-xl border border-rose-100 text-xs font-semibold text-rose-700 cursor-pointer">
                             <input type="radio" name="ccMode" value="installment" onchange="toggleCcInputBox()" class="mr-2 accent-rose-600"> ผ่อนชำระรายเดือน
                         </label>
                     </div>
@@ -310,7 +495,7 @@
                     <div id="ccInstallmentFields" class="hidden space-y-2.5 pt-2 border-t border-rose-200/60">
                         <div class="grid grid-cols-2 gap-2">
                             <div>
-                                <label class="block text-[11px] text-slate-600 mb-0.5">จำนวนงวดทั้งหมด (เดือน)</label>
+                                <label class="block text-[11px] text-slate-600 mb-0.5">จำนวนงวด (เดือน)</label>
                                 <input type="number" id="ccMonths" min="1" value="10" oninput="calcCcInstallment()" class="w-full border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs bg-white">
                             </div>
                             <div>
@@ -327,26 +512,26 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs text-slate-500 mb-1">โน้ตเพิ่มเติม</label>
-                    <input type="text" id="txNote" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm">
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">โน้ตเพิ่มเติม</label>
+                    <input type="text" id="txNote" class="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm outline-none focus:border-blue-500">
                 </div>
-                <div class="flex justify-end gap-2 pt-2">
-                    <button type="button" onclick="closeModal('txModal')" class="px-4 py-2 text-sm text-slate-500 cursor-pointer">ยกเลิก</button>
-                    <button type="submit" class="px-4 py-2 text-sm bg-blue-600 text-white rounded-xl font-medium cursor-pointer">บันทึก</button>
+                <div class="flex justify-end gap-2 pt-3">
+                    <button type="button" onclick="closeModal('txModal')" class="px-4 py-2.5 text-xs font-semibold text-slate-500 hover:bg-slate-100 rounded-xl cursor-pointer transition">ยกเลิก</button>
+                    <button type="submit" class="px-5 py-2.5 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold shadow-md shadow-blue-600/20 cursor-pointer transition">บันทึกรายการ</button>
                 </div>
             </form>
         </div>
     </div>
 
     <!-- MODAL 3: DEBT -->
-    <div id="debtModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-2xl p-6 w-full max-w-md space-y-4 shadow-2xl max-h-[92vh] overflow-y-auto">
-            <h3 id="debtModalTitle" class="text-lg font-bold text-slate-800">จัดการหนี้สิน / ผ่อนชำระ</h3>
-            <form onsubmit="submitDebt(event)" class="space-y-3">
+    <div id="debtModal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-xs hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-3xl p-6 w-full max-w-md space-y-4 shadow-2xl max-h-[92vh] overflow-y-auto border border-slate-100 modal-animate">
+            <h3 id="debtModalTitle" class="text-lg font-extrabold text-slate-800">จัดการหนี้สิน / ผ่อนชำระ</h3>
+            <form onsubmit="submitDebt(event)" class="space-y-3.5">
                 <input type="hidden" id="debtId">
                 <div>
-                    <label class="block text-xs text-slate-500 mb-1">ประเภทหนี้สิน</label>
-                    <select id="debtCategorySelect" onchange="toggleDebtCardSelect()" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white font-semibold">
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">ประเภทหนี้สิน</label>
+                    <select id="debtCategorySelect" onchange="toggleDebtCardSelect()" class="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm bg-white font-semibold outline-none">
                         <option value="Card">💳 ผ่อนในบัตรเครดิต / PayLater</option>
                         <option value="Home">🏠 สินเชื่อบ้าน / คอนโด / ที่อยู่อาศัย</option>
                         <option value="Car">🚗 สินเชื่อรถยนต์ / มอเตอร์ไซค์</option>
@@ -355,123 +540,123 @@
                     </select>
                 </div>
                 <div id="debtCardSelectDiv">
-                    <label class="block text-xs text-slate-500 mb-1">เลือกบัตรเครดิต / PayLater ที่ใช้ผ่อน</label>
-                    <select id="debtCardId" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white"></select>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">เลือกบัตรเครดิต / PayLater ที่ใช้ผ่อน</label>
+                    <select id="debtCardId" class="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm bg-white outline-none"></select>
                 </div>
                 <div>
-                    <label class="block text-xs text-slate-500 mb-1">ชื่อรายการหนี้ / สินค้าที่ผ่อน</label>
-                    <input type="text" id="debtName" required placeholder="เช่น ผ่อน iPad, ผ่อนบ้าน, ผ่อนรถยนต์" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm">
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">ชื่อรายการหนี้ / สินค้าที่ผ่อน</label>
+                    <input type="text" id="debtName" required placeholder="เช่น ผ่อน iPad, ผ่อนบ้าน, ผ่อนรถยนต์" class="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm outline-none">
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-xs text-slate-500 mb-1">ยอดหนี้เต็มจำนวน (บาท)</label>
-                        <input type="number" id="debtTotal" step="0.01" required oninput="if(!document.getElementById('debtId').value) document.getElementById('debtRemaining').value=this.value" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm">
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">ยอดหนี้เต็มจำนวน (บาท)</label>
+                        <input type="number" id="debtTotal" step="0.01" required oninput="if(!document.getElementById('debtId').value) document.getElementById('debtRemaining').value=this.value" class="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm outline-none">
                     </div>
                     <div>
-                        <label class="block text-xs text-slate-700 font-semibold mb-1">ยอดคงเหลือที่ต้องผ่อน (บาท)</label>
-                        <input type="number" id="debtRemaining" step="0.01" required class="w-full border-2 border-amber-300 rounded-xl px-3 py-2 text-sm font-bold text-rose-600">
+                        <label class="block text-xs text-slate-700 font-bold mb-1">ยอดคงเหลือที่ต้องผ่อน</label>
+                        <input type="number" id="debtRemaining" step="0.01" required class="w-full border-2 border-amber-300 rounded-xl px-3.5 py-2.5 text-sm font-bold text-rose-600 outline-none">
                     </div>
                 </div>
                 <p class="text-[11px] text-slate-400 -mt-1">* หากบันทึกย้อนหลังและจ่ายไปบางงวดแล้ว ให้ใส่เฉพาะยอดที่เหลือในช่อง "ยอดคงเหลือที่ต้องผ่อน"</p>
                 <div>
-                    <label class="block text-xs text-slate-500 mb-1">ค่างวดที่ต้องจ่ายต่อเดือน (บาท)</label>
-                    <input type="number" id="debtInstallment" step="0.01" required class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm font-bold">
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">ค่างวดที่ต้องจ่ายต่อเดือน (บาท)</label>
+                    <input type="number" id="debtInstallment" step="0.01" required class="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm font-bold outline-none">
                 </div>
                 <div>
-                    <label class="block text-xs text-slate-500 mb-1">กำหนดชำระทุกวันที่</label>
-                    <input type="text" id="debtDue" placeholder="เช่น ทุกวันที่ 5 ของเดือน" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm">
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">กำหนดชำระทุกวันที่</label>
+                    <input type="text" id="debtDue" placeholder="เช่น ทุกวันที่ 5 ของเดือน" class="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm outline-none">
                 </div>
-                <div class="flex justify-end gap-2 pt-2">
-                    <button type="button" onclick="closeModal('debtModal')" class="px-4 py-2 text-sm text-slate-500 cursor-pointer">ยกเลิก</button>
-                    <button type="submit" class="px-4 py-2 text-sm bg-blue-600 text-white rounded-xl font-medium cursor-pointer">บันทึก</button>
+                <div class="flex justify-end gap-2 pt-3">
+                    <button type="button" onclick="closeModal('debtModal')" class="px-4 py-2.5 text-xs font-semibold text-slate-500 hover:bg-slate-100 rounded-xl cursor-pointer transition">ยกเลิก</button>
+                    <button type="submit" class="px-5 py-2.5 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold shadow-md shadow-blue-600/20 cursor-pointer transition">บันทึกข้อมูล</button>
                 </div>
             </form>
         </div>
     </div>
 
     <!-- MODAL 4: PAY SINGLE DEBT -->
-    <div id="payDebtModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-2xl p-6 w-full max-w-md space-y-4 shadow-2xl">
-            <h3 id="payDebtTitle" class="text-lg font-bold text-slate-800">💸 ชำระค่างวด</h3>
-            <form onsubmit="submitPayDebt(event)" class="space-y-3">
+    <div id="payDebtModal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-xs hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-3xl p-6 w-full max-w-md space-y-4 shadow-2xl border border-slate-100 modal-animate">
+            <h3 id="payDebtTitle" class="text-lg font-extrabold text-slate-800">💸 ชำระค่างวด</h3>
+            <form onsubmit="submitPayDebt(event)" class="space-y-3.5">
                 <input type="hidden" id="payDebtId">
                 <div>
-                    <label class="block text-xs text-slate-500 mb-1">จำนวนเงินที่ชำระจริง (บาท)</label>
-                    <input type="number" id="payDebtCustomAmount" step="0.01" min="0.01" required class="w-full border-2 border-rose-200 rounded-xl px-3 py-2 text-base font-bold text-rose-600">
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">จำนวนเงินที่ชำระจริง (บาท)</label>
+                    <input type="number" id="payDebtCustomAmount" step="0.01" min="0.01" required class="w-full border-2 border-rose-200 rounded-xl px-3.5 py-2.5 text-base font-bold text-rose-600 outline-none">
                 </div>
                 <div>
-                    <label class="block text-xs text-slate-500 mb-1">ตัดเงินจากบัญชีธนาคาร/เงินสด</label>
-                    <select id="payDebtAccountSelect" required class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white"></select>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">ตัดเงินจากบัญชีธนาคาร/เงินสด</label>
+                    <select id="payDebtAccountSelect" required class="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm bg-white outline-none"></select>
                 </div>
                 <div>
-                    <label class="block text-xs text-slate-500 mb-1">โน้ตเพิ่มเติม</label>
-                    <input type="text" id="payDebtNote" placeholder="เช่น จ่ายค่างวดเดือนนี้" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm">
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">โน้ตเพิ่มเติม</label>
+                    <input type="text" id="payDebtNote" placeholder="เช่น จ่ายค่างวดเดือนนี้" class="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm outline-none">
                 </div>
-                <div class="flex justify-end gap-2 pt-2">
-                    <button type="button" onclick="closeModal('payDebtModal')" class="px-4 py-2 text-sm text-slate-500 cursor-pointer">ยกเลิก</button>
-                    <button type="submit" class="px-4 py-2 text-sm bg-rose-600 text-white rounded-xl font-medium cursor-pointer">ยืนยันการจ่าย</button>
+                <div class="flex justify-end gap-2 pt-3">
+                    <button type="button" onclick="closeModal('payDebtModal')" class="px-4 py-2.5 text-xs font-semibold text-slate-500 hover:bg-slate-100 rounded-xl cursor-pointer transition">ยกเลิก</button>
+                    <button type="submit" class="px-5 py-2.5 text-xs bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-semibold shadow-md shadow-rose-600/20 cursor-pointer transition">ยืนยันการจ่าย</button>
                 </div>
             </form>
         </div>
     </div>
 
     <!-- MODAL 5: BATCH PAY CARD -->
-    <div id="batchPayModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-2xl p-6 w-full max-w-lg space-y-4 shadow-2xl max-h-[92vh] overflow-y-auto">
+    <div id="batchPayModal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-xs hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-3xl p-6 w-full max-w-lg space-y-4 shadow-2xl max-h-[92vh] overflow-y-auto border border-slate-100 modal-animate">
             <div>
-                <h3 id="batchPayTitle" class="text-lg font-bold text-slate-800">💳 ชำระยอดบัตร / จ่ายงวดรวม</h3>
-                <p class="text-xs text-slate-500">แสดงรายการที่ผ่อนอยู่และยอดรอชำระปลายเดือนของบัตรนี้ สามารถระบุจำนวนเงินที่ชำระจริงในแต่ละรายการได้</p>
+                <h3 id="batchPayTitle" class="text-lg font-extrabold text-slate-800">💳 ชำระยอดบัตร / จ่ายงวดรวม</h3>
+                <p class="text-xs text-slate-500 mt-0.5">แสดงรายการที่ผ่อนอยู่และยอดรอชำระปลายเดือนของบัตรนี้ สามารถระบุจำนวนเงินที่ชำระจริงได้</p>
             </div>
             <form onsubmit="submitBatchPayCard(event)" class="space-y-4">
                 <input type="hidden" id="batchPayCardId">
                 <div id="batchPayItemsList" class="space-y-2.5 max-h-72 overflow-y-auto pr-1"></div>
 
-                <div class="p-3.5 bg-slate-900 text-white rounded-2xl flex justify-between items-center">
+                <div class="p-4 bg-gradient-to-r from-slate-900 to-indigo-950 text-white rounded-2xl flex justify-between items-center shadow-md">
                     <div>
                         <div class="text-[11px] text-slate-400">ยอดต้องชำระรายเดือนรวม: <span id="batchSuggestedTotal">฿0.00</span></div>
-                        <div class="text-xs font-semibold">ยอดรวมที่ชำระจริงในครั้งนี้:</div>
+                        <div class="text-xs font-semibold mt-0.5">ยอดรวมที่ชำระจริงในครั้งนี้:</div>
                     </div>
                     <div id="batchActualTotalText" class="text-xl font-extrabold text-emerald-400">฿0.00</div>
                 </div>
 
                 <div>
-                    <label class="block text-xs text-slate-500 mb-1">ตัดเงินจากบัญชีธนาคาร / เงินสด</label>
-                    <select id="batchPayBankSelect" required class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white"></select>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">ตัดเงินจากบัญชีธนาคาร / เงินสด</label>
+                    <select id="batchPayBankSelect" required class="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm bg-white outline-none"></select>
                 </div>
 
                 <div class="flex justify-end gap-2 pt-2">
-                    <button type="button" onclick="closeModal('batchPayModal')" class="px-4 py-2 text-sm text-slate-500 cursor-pointer">ยกเลิก</button>
-                    <button type="submit" id="btnSubmitBatchPay" class="px-4 py-2 text-sm bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-semibold cursor-pointer">💸 ยืนยันการชำระรวม</button>
+                    <button type="button" onclick="closeModal('batchPayModal')" class="px-4 py-2.5 text-xs font-semibold text-slate-500 hover:bg-slate-100 rounded-xl cursor-pointer transition">ยกเลิก</button>
+                    <button type="submit" id="btnSubmitBatchPay" class="px-5 py-2.5 text-xs bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-semibold shadow-md shadow-rose-600/20 cursor-pointer transition">💸 ยืนยันการชำระรวม</button>
                 </div>
             </form>
         </div>
     </div>
 
     <!-- MODAL 6: INVESTMENT -->
-    <div id="invModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-2xl p-6 w-full max-w-md space-y-4 shadow-2xl">
-            <h3 id="invModalTitle" class="text-lg font-bold text-slate-800">จัดการพอร์ตการลงทุน</h3>
-            <form onsubmit="submitInvestment(event)" class="space-y-3">
+    <div id="invModal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-xs hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-3xl p-6 w-full max-w-md space-y-4 shadow-2xl border border-slate-100 modal-animate">
+            <h3 id="invModalTitle" class="text-lg font-extrabold text-slate-800">จัดการพอร์ตการลงทุน</h3>
+            <form onsubmit="submitInvestment(event)" class="space-y-3.5">
                 <input type="hidden" id="invId">
                 <div>
-                    <label class="block text-xs text-slate-500 mb-1">ชื่อสินทรัพย์ / กองทุน / หุ้น</label>
-                    <input type="text" id="invName" required placeholder="เช่น SCBS&P500, K-USA, หุ้น PTT, ทองคำ" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm">
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">ชื่อสินทรัพย์ / กองทุน / หุ้น</label>
+                    <input type="text" id="invName" required placeholder="เช่น SCBS&P500, K-USA, หุ้น PTT, ทองคำ" class="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm outline-none">
                 </div>
                 <div>
-                    <label class="block text-xs text-slate-500 mb-1">หมวดหมู่</label>
-                    <input type="text" id="invCategory" required placeholder="เช่น กองทุนรวม, หุ้นไทย, คริปโต" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm">
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">หมวดหมู่</label>
+                    <input type="text" id="invCategory" required placeholder="เช่น กองทุนรวม, หุ้นไทย, คริปโต" class="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm outline-none">
                 </div>
                 <div>
-                    <label class="block text-xs text-slate-500 mb-1">ต้นทุนรวมที่ซื้อ (บาท)</label>
-                    <input type="number" id="invCost" step="0.01" required class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm">
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">ต้นทุนรวมที่ซื้อ (บาท)</label>
+                    <input type="number" id="invCost" step="0.01" required class="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm outline-none">
                 </div>
                 <div>
-                    <label class="block text-xs text-slate-500 mb-1">มูลค่าปัจจุบัน (บาท)</label>
-                    <input type="number" id="invValue" step="0.01" required class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm font-bold text-emerald-600">
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">มูลค่าปัจจุบัน (บาท)</label>
+                    <input type="number" id="invValue" step="0.01" required class="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm font-bold text-emerald-600 outline-none">
                 </div>
-                <div class="flex justify-end gap-2 pt-2">
-                    <button type="button" onclick="closeModal('invModal')" class="px-4 py-2 text-sm text-slate-500 cursor-pointer">ยกเลิก</button>
-                    <button type="submit" class="px-4 py-2 text-sm bg-blue-600 text-white rounded-xl font-medium cursor-pointer">บันทึก</button>
+                <div class="flex justify-end gap-2 pt-3">
+                    <button type="button" onclick="closeModal('invModal')" class="px-4 py-2.5 text-xs font-semibold text-slate-500 hover:bg-slate-100 rounded-xl cursor-pointer transition">ยกเลิก</button>
+                    <button type="submit" class="px-5 py-2.5 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold shadow-md shadow-blue-600/20 cursor-pointer transition">บันทึกข้อมูล</button>
                 </div>
             </form>
         </div>
@@ -481,7 +666,14 @@
     <script>
         let SCRIPT_URL = localStorage.getItem("WIN_WEALTH_API_URL") || "";
 
+        function refreshIcons() {
+            if (window.lucide) {
+                lucide.createIcons();
+            }
+        }
+
         window.addEventListener("DOMContentLoaded", () => {
+            refreshIcons();
             if (!SCRIPT_URL) {
                 document.getElementById("loginScreen").classList.add("hidden");
                 document.getElementById("setupApiScreen").classList.remove("hidden");
@@ -496,7 +688,7 @@
             }
             localStorage.setItem("WIN_WEALTH_API_URL", urlInput);
             SCRIPT_URL = urlInput;
-            alert("บันทึก URL เชื่อมต่อสำเร็จแล้วค่ะ!");
+            alert("บันทึก URL เชื่อมต่อสำเร็จแล้วครับ!");
             location.reload();
         }
 
@@ -559,13 +751,16 @@
         }
 
         function openModal(id) {
-            document.getElementById(id).classList.remove("hidden");
-            document.getElementById(id).classList.add("flex");
+            const el = document.getElementById(id);
+            el.classList.remove("hidden");
+            el.classList.add("flex");
+            refreshIcons();
         }
 
         function closeModal(id) {
-            document.getElementById(id).classList.add("hidden");
-            document.getElementById(id).classList.remove("flex");
+            const el = document.getElementById(id);
+            el.classList.add("hidden");
+            el.classList.remove("flex");
         }
 
         // ================= Meta Helper: วงเงินร่วม (Shared Limit) ใน Account Due =================
@@ -1003,17 +1198,17 @@
             let html = "";
             if (fullPayOwed > 0) {
                 html += `
-                    <div class="p-3 bg-amber-50/70 border border-amber-200 rounded-xl space-y-2">
+                    <div class="p-3.5 bg-amber-50/70 border border-amber-200 rounded-2xl space-y-2">
                         <div class="flex justify-between items-center text-xs">
                             <label class="font-bold text-amber-900 flex items-center gap-1.5 cursor-pointer">
-                                <input type="checkbox" id="chkFullPay" checked onchange="recalcBatchTotal()" class="accent-rose-600">
+                                <input type="checkbox" id="chkFullPay" checked onchange="recalcBatchTotal()" class="accent-rose-600 w-4 h-4">
                                 <span>ยอดรูดจ่ายเต็มปลายเดือน</span>
                             </label>
                             <span class="text-slate-500">ค้างชำระ: <strong class="text-rose-600">฿${fmt(fullPayOwed)}</strong></span>
                         </div>
                         <div class="flex items-center justify-between gap-2">
                             <span class="text-[11px] text-slate-500">จำนวนเงินที่ชำระจริง (บาท):</span>
-                            <input type="number" id="inputFullPayAmt" step="0.01" min="0" value="${fullPayOwed.toFixed(2)}" oninput="recalcBatchTotal()" class="w-36 border border-amber-300 rounded-lg px-2.5 py-1 text-xs font-bold text-right bg-white">
+                            <input type="number" id="inputFullPayAmt" step="0.01" min="0" value="${fullPayOwed.toFixed(2)}" oninput="recalcBatchTotal()" class="w-36 border border-amber-300 rounded-xl px-2.5 py-1.5 text-xs font-bold text-right bg-white outline-none">
                         </div>
                     </div>`;
             }
@@ -1022,23 +1217,23 @@
                 const rem = Number(d.remainingAmount || 0);
                 const stdMonth = Math.min(Number(d.installmentAmount || 0), rem);
                 html += `
-                    <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                    <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl space-y-2">
                         <div class="flex justify-between items-start text-xs">
                             <label class="font-bold text-slate-800 flex items-center gap-1.5 cursor-pointer">
-                                <input type="checkbox" class="chk-batch-debt accent-rose-600" data-id="${d.id}" checked onchange="recalcBatchTotal()">
+                                <input type="checkbox" class="chk-batch-debt accent-rose-600 w-4 h-4" data-id="${d.id}" checked onchange="recalcBatchTotal()">
                                 <span>ผ่อน: ${d.name}</span>
                             </label>
                             <span class="text-[11px] text-slate-500">เหลือ: ฿${fmt(rem)} | งวดละ: <strong class="text-slate-700">฿${fmt(stdMonth)}</strong></span>
                         </div>
                         <div class="flex items-center justify-between gap-2">
                             <span class="text-[11px] text-slate-500">จำนวนที่ชำระจริงงวดนี้ (บาท):</span>
-                            <input type="number" id="batchDebtAmt_${d.id}" data-suggested="${stdMonth}" step="0.01" min="0" value="${stdMonth.toFixed(2)}" oninput="recalcBatchTotal()" class="w-36 border border-slate-300 rounded-lg px-2.5 py-1 text-xs font-bold text-rose-600 text-right bg-white">
+                            <input type="number" id="batchDebtAmt_${d.id}" data-suggested="${stdMonth}" step="0.01" min="0" value="${stdMonth.toFixed(2)}" oninput="recalcBatchTotal()" class="w-36 border border-slate-300 rounded-xl px-2.5 py-1.5 text-xs font-bold text-rose-600 text-right bg-white outline-none">
                         </div>
                     </div>`;
             });
 
             if (!html) {
-                html = `<div class="p-6 text-center text-xs text-slate-400 bg-slate-50 rounded-xl">ไม่มีรายการค้างชำระหรือรายการผ่อนในบัตรนี้</div>`;
+                html = `<div class="p-6 text-center text-xs text-slate-400 bg-slate-50 rounded-2xl">ไม่มีรายการค้างชำระหรือรายการผ่อนในบัตรนี้</div>`;
             }
 
             document.getElementById("batchPayItemsList").innerHTML = html;
@@ -1250,18 +1445,18 @@
                 const exp = monthMap[m].expense;
                 const net = inc - exp;
                 return `
-                    <tr class="hover:bg-slate-50 cursor-pointer ${m === selectedMonth ? 'bg-blue-50/50 font-semibold' : ''}" onclick="document.getElementById('monthFilter').value='${m}'; renderMonthlySummary();">
-                        <td class="py-2.5 px-3 text-slate-700">${m}</td>
-                        <td class="py-2.5 px-3 text-right text-emerald-600">+฿${fmt(inc)}</td>
-                        <td class="py-2.5 px-3 text-right text-rose-600">-฿${fmt(exp)}</td>
-                        <td class="py-2.5 px-3 text-right font-bold ${net >= 0 ? 'text-blue-600' : 'text-rose-600'}">${net >= 0 ? '+' : ''}฿${fmt(net)}</td>
+                    <tr class="hover:bg-slate-50 transition cursor-pointer ${m === selectedMonth ? 'bg-blue-50/60 font-semibold' : ''}" onclick="document.getElementById('monthFilter').value='${m}'; renderMonthlySummary();">
+                        <td class="py-3 px-3.5 text-slate-700">${m}</td>
+                        <td class="py-3 px-3.5 text-right text-emerald-600">+฿${fmt(inc)}</td>
+                        <td class="py-3 px-3.5 text-right text-rose-600">-฿${fmt(exp)}</td>
+                        <td class="py-3 px-3.5 text-right font-bold ${net >= 0 ? 'text-blue-600' : 'text-rose-600'}">${net >= 0 ? '+' : ''}฿${fmt(net)}</td>
                     </tr>`;
-            }).join("") || `<tr><td colspan="4" class="text-center py-4 text-slate-400">ยังไม่มีข้อมูลรายเดือน</td></tr>`;
+            }).join("") || `<tr><td colspan="4" class="text-center py-6 text-slate-400">ยังไม่มีข้อมูลรายเดือน</td></tr>`;
 
             renderChart(selectedMonth);
         }
 
-        // ================= RENDER DASHBOARD (พร้อมระบบวงเงินร่วม Shared Limit) =================
+        // ================= RENDER DASHBOARD (พร้อมระบบวงเงินร่วม + Visual Credit Card UI) =================
         function renderDashboard() {
             let totalBankAssets = 0, totalInvAssets = 0, totalCreditAll = 0, totalOtherDebts = 0;
             const bankAccounts = state.accounts.filter(a => a.type !== 'CreditCard');
@@ -1338,22 +1533,41 @@
             document.getElementById("bankAccountsContainer").innerHTML = bankAccounts.map(a => {
                 const bal = Number(a.balance || 0);
                 totalBankAssets += bal;
+                const isCash = a.type === 'Cash';
                 return `
-                    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 flex flex-col justify-between space-y-2">
+                    <div class="card-hover bg-gradient-to-br from-white to-slate-50/90 p-5 rounded-2xl border border-slate-200/80 flex flex-col justify-between space-y-3 relative overflow-hidden">
                         <div class="flex justify-between items-start text-xs">
-                            <span class="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md font-semibold">${a.type === 'Cash' ? '💵 เงินสด' : '🏦 ธนาคาร'}</span>
+                            <span class="inline-flex items-center gap-1.5 text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-2.5 py-1 rounded-full font-semibold">
+                                <i data-lucide="${isCash ? 'banknote' : 'landmark'}" class="w-3.5 h-3.5"></i>
+                                <span>${isCash ? 'เงินสด' : 'บัญชีธนาคาร'}</span>
+                            </span>
                             <div class="flex gap-1">
-                                <button onclick="openEditAccountModal('${a.id}')" class="text-blue-600 px-1 text-xs cursor-pointer">✏️</button>
-                                <button onclick="deleteAccount('${a.id}', '${a.name}')" class="text-slate-400 hover:text-rose-600 px-1 text-xs cursor-pointer">🗑️</button>
+                                <button onclick="openEditAccountModal('${a.id}')" class="text-slate-400 hover:text-blue-600 p-1 rounded-lg hover:bg-blue-50 transition cursor-pointer" title="แก้ไข">
+                                    <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                                </button>
+                                <button onclick="deleteAccount('${a.id}', '${a.name}')" class="text-slate-400 hover:text-rose-600 p-1 rounded-lg hover:bg-rose-50 transition cursor-pointer" title="ลบ">
+                                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                </button>
                             </div>
                         </div>
-                        <div class="font-bold text-slate-800 text-sm">${a.name}</div>
-                        <div class="text-xl font-extrabold text-emerald-600">฿${fmt(bal)}</div>
+                        <div>
+                            <div class="font-bold text-slate-600 text-xs">${a.name}</div>
+                            <div class="text-2xl font-extrabold text-slate-900 mt-0.5">฿${fmt(bal)}</div>
+                        </div>
                     </div>`;
-            }).join("") || '<p class="text-xs text-slate-400 col-span-full">ยังไม่มีบัญชีธนาคาร</p>';
+            }).join("") || '<p class="text-xs text-slate-400 col-span-full py-4 text-center">ยังไม่มีบัญชีธนาคาร</p>';
 
-            // แสดงรายการบัตรเครดิต & PayLater พร้อมการคำนวณวงเงินร่วม
-            document.getElementById("creditCardsContainer").innerHTML = creditCards.map(a => {
+            // ธีมสีการ์ดบัตรเครดิตเสมือน (Visual Credit Card Themes)
+            const cardThemes = [
+                "from-slate-900 via-slate-800 to-indigo-950",
+                "from-indigo-950 via-blue-900 to-slate-900",
+                "from-rose-950 via-rose-900 to-slate-900",
+                "from-purple-950 via-indigo-950 to-slate-900",
+                "from-emerald-950 via-teal-900 to-slate-900"
+            ];
+
+            // แสดงรายการบัตรเครดิต & PayLater สไตล์บัตรเครดิตเสมือนจริง
+            document.getElementById("creditCardsContainer").innerHTML = creditCards.map((a, idx) => {
                 const fullPayOwed = Math.abs(Number(a.balance || 0));
                 const instRemaining = cardInstallmentRemainingMap[a.id] || 0;
                 const instMonthly = cardInstallmentMonthlyMap[a.id] || 0;
@@ -1370,64 +1584,86 @@
                 const availLimit = effectiveLimit > 0 ? Math.max(0, effectiveLimit - groupUsed) : 0;
                 const usedPct = effectiveLimit > 0 ? Math.min(100, Math.round((groupUsed / effectiveLimit) * 100)) : 0;
 
+                const themeClass = cardThemes[idx % cardThemes.length];
+                const fakeDigits = String(a.id || "8842").slice(-4).padStart(4, '8');
+
                 return `
-                    <div class="bg-rose-50/30 p-5 rounded-2xl border border-rose-200 flex flex-col justify-between space-y-3">
-                        <div class="space-y-2.5">
-                            <div class="flex justify-between items-start">
-                                <div>
-                                    <div class="flex flex-wrap items-center gap-1.5">
-                                        <span class="text-[10px] bg-rose-100 text-rose-700 px-2 py-0.5 rounded-md font-semibold">💳 บัตรเครดิต</span>
-                                        ${isShared ? (
-                                            isChild 
-                                                ? `<span class="text-[10px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded-md font-semibold">🔗 แชร์กับ ${rootCard.name}</span>`
-                                                : `<span class="text-[10px] bg-purple-100 text-purple-800 px-2 py-0.5 rounded-md font-semibold">👑 บัตรหลัก (วงเงินร่วม)</span>`
-                                        ) : ''}
+                    <div class="card-hover bg-gradient-to-br ${themeClass} text-white p-5 rounded-3xl shadow-lg flex flex-col justify-between space-y-4 relative overflow-hidden border border-white/10">
+                        <!-- แสงสะท้อนมุมบัตร -->
+                        <div class="absolute -right-12 -top-12 w-40 h-40 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
+
+                        <div class="space-y-3.5 relative z-10">
+                            <!-- แถวบน: ชิปการ์ด + ป้ายสถานะวงเงินร่วม + ปุ่มแก้ไข -->
+                            <div class="flex justify-between items-start gap-2">
+                                <div class="flex items-center gap-2.5">
+                                    <!-- Simulated EMV Chip -->
+                                    <div class="w-9 h-6 rounded-md bg-gradient-to-br from-amber-200 via-yellow-400 to-amber-500 border border-amber-100/50 flex items-center justify-center shadow-inner">
+                                        <div class="w-5 h-3.5 border border-amber-700/30 rounded-xs"></div>
                                     </div>
-                                    <h4 class="font-bold text-slate-800 text-base mt-1">${a.name}</h4>
+                                    <i data-lucide="wifi" class="w-4 h-4 text-white/50 rotate-90"></i>
                                 </div>
-                                <div class="flex gap-1">
-                                    <button onclick="openEditAccountModal('${a.id}')" class="text-blue-600 px-1.5 py-0.5 bg-white border border-slate-200 rounded-lg text-xs cursor-pointer">✏️</button>
-                                    <button onclick="deleteAccount('${a.id}', '${a.name}')" class="text-slate-400 hover:text-rose-600 px-1 text-xs cursor-pointer">🗑️</button>
+                                <div class="flex items-center gap-1.5">
+                                    ${isShared ? (
+                                        isChild 
+                                            ? `<span class="text-[10px] bg-amber-400/20 text-amber-200 border border-amber-300/30 px-2.5 py-0.5 rounded-full font-semibold backdrop-blur-md">🔗 แชร์กับ ${rootCard.name}</span>`
+                                            : `<span class="text-[10px] bg-purple-400/20 text-purple-200 border border-purple-300/30 px-2.5 py-0.5 rounded-full font-semibold backdrop-blur-md">👑 บัตรหลัก (วงเงินร่วม)</span>`
+                                    ) : `<span class="text-[10px] bg-white/10 text-white/80 px-2.5 py-0.5 rounded-full font-medium">💳 Credit / PayLater</span>`}
+                                    <button onclick="openEditAccountModal('${a.id}')" class="text-white/70 hover:text-white p-1 bg-white/10 hover:bg-white/20 rounded-lg transition cursor-pointer" title="แก้ไขบัตร">
+                                        <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                                    </button>
+                                    <button onclick="deleteAccount('${a.id}', '${a.name}')" class="text-white/60 hover:text-rose-300 p-1 bg-white/10 hover:bg-white/20 rounded-lg transition cursor-pointer" title="ลบบัตร">
+                                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                    </button>
                                 </div>
                             </div>
 
-                            <!-- ยอดใช้จ่ายของบัตรใบนี้ -->
-                            <div class="bg-white p-3 rounded-xl border border-rose-100 space-y-1.5">
+                            <!-- ชื่อบัตร & เลขจำลอง -->
+                            <div>
+                                <div class="text-[11px] font-mono tracking-[0.25em] text-white/50">•••• •••• •••• ${fakeDigits}</div>
+                                <h4 class="font-extrabold text-white text-lg tracking-tight mt-0.5">${a.name}</h4>
+                            </div>
+
+                            <!-- กล่อง Glassmorphism แสดงยอดใช้จ่าย -->
+                            <div class="bg-white/10 backdrop-blur-md p-3.5 rounded-2xl border border-white/15 space-y-2">
                                 <div class="flex justify-between items-center">
-                                    <span class="text-xs font-semibold text-slate-600">ยอดรูดใช้จ่ายบัตรนี้:</span>
-                                    <strong class="text-lg font-extrabold text-rose-600">฿${fmt(myCardUsed)}</strong>
+                                    <span class="text-xs text-white/80">ยอดรูดใช้จ่ายบัตรนี้:</span>
+                                    <strong class="text-lg font-extrabold text-rose-300">฿${fmt(myCardUsed)}</strong>
                                 </div>
-                                <div class="flex justify-between text-[11px] text-slate-500 pt-1 border-t border-slate-100">
-                                    <span>• จ่ายเต็มปลายเดือน: <strong class="text-slate-700">฿${fmt(fullPayOwed)}</strong></span>
-                                    <span>• ค้างผ่อนรวม: <strong class="text-slate-700">฿${fmt(instRemaining)}</strong></span>
+                                <div class="flex justify-between text-[11px] text-white/60 pt-1.5 border-t border-white/10">
+                                    <span>• จ่ายเต็ม: <strong class="text-white">฿${fmt(fullPayOwed)}</strong></span>
+                                    <span>• ผ่อนคงเหลือ: <strong class="text-white">฿${fmt(instRemaining)}</strong></span>
                                 </div>
                             </div>
 
-                            <!-- วงเงินเต็ม และ วงเงินคงเหลือที่ใช้ได้ (คำนวณแบบวงเงินร่วม) -->
-                            <div class="space-y-1 text-xs">
+                            <!-- วงเงินเต็ม & วงเงินคงเหลือที่ใช้ได้ -->
+                            <div class="space-y-1.5 text-xs">
                                 <div class="flex justify-between text-[11px]">
-                                    <span class="text-slate-500">วงเงินเต็ม${isShared ? ' (ร่วม)' : ''}: <strong class="text-slate-700">฿${fmt(effectiveLimit)}</strong></span>
-                                    <span class="text-emerald-700 font-semibold">วงเงินคงเหลือ: ฿${fmt(availLimit)}</span>
+                                    <span class="text-white/70">วงเงินเต็ม${isShared ? ' (ร่วม)' : ''}: <strong class="text-white">฿${fmt(effectiveLimit)}</strong></span>
+                                    <span class="text-emerald-300 font-bold">ใช้ได้: ฿${fmt(availLimit)}</span>
                                 </div>
                                 ${effectiveLimit > 0 ? `
-                                <div class="w-full h-2 bg-slate-200 rounded-full overflow-hidden" title="ใช้ไปแล้ว ฿${fmt(groupUsed)} (${usedPct}%)">
-                                    <div class="h-full bg-rose-500" style="width: ${usedPct}%"></div>
+                                <div class="w-full h-2 bg-white/15 rounded-full overflow-hidden p-0.5" title="ใช้ไปแล้ว ฿${fmt(groupUsed)} (${usedPct}%)">
+                                    <div class="h-full bg-gradient-to-r from-emerald-400 via-amber-400 to-rose-500 rounded-full transition-all duration-500" style="width: ${usedPct}%"></div>
                                 </div>` : ''}
                                 ${isShared ? `
-                                <div class="text-[10px] text-slate-400 text-right">
-                                    * ยอดใช้วงเงินรวมในกลุ่ม: ฿${fmt(groupUsed)}
+                                <div class="text-[10px] text-amber-200/80 text-right">
+                                    * ยอดใช้วงเงินรวมในกลุ่ม: ฿${fmt(groupUsed)} (${usedPct}%)
                                 </div>` : ''}
                             </div>
                         </div>
 
-                        <div class="pt-2 border-t border-rose-100 flex justify-between items-center gap-2">
-                            <span class="text-[11px] text-slate-500">${meta.cleanDue ? `📅 ${meta.cleanDue}` : 'พร้อมใช้งาน'}</span>
-                            <button onclick="openBatchPayCardModal('${a.id}')" class="bg-rose-600 hover:bg-rose-700 text-white px-3 py-1.5 rounded-xl text-xs font-semibold cursor-pointer shadow-xs">
-                                💸 จ่ายบิล/งวดรวม (฿${fmt(fullPayOwed + instMonthly)})
+                        <!-- แถวล่าง: วันตัดรอบ & ปุ่มจ่ายบิล -->
+                        <div class="pt-3 border-t border-white/10 flex justify-between items-center gap-2 relative z-10">
+                            <span class="text-[11px] text-white/70 flex items-center gap-1">
+                                <i data-lucide="calendar" class="w-3.5 h-3.5 text-white/50"></i>
+                                <span>${meta.cleanDue || 'พร้อมใช้งาน'}</span>
+                            </span>
+                            <button onclick="openBatchPayCardModal('${a.id}')" class="bg-white text-slate-900 hover:bg-rose-50 px-3.5 py-1.5 rounded-xl text-xs font-bold cursor-pointer shadow-sm transition flex items-center gap-1.5">
+                                <span>💸 จ่ายบิล (฿${fmt(fullPayOwed + instMonthly)})</span>
                             </button>
                         </div>
                     </div>`;
-            }).join("") || '<p class="text-xs text-slate-400 col-span-full">ยังไม่มีบัตรเครดิต หรือ PayLater</p>';
+            }).join("") || '<p class="text-xs text-slate-400 col-span-full py-4 text-center">ยังไม่มีบัตรเครดิต หรือ PayLater</p>';
 
             // 3. แสดงรายการหนี้สิน
             renderGroupedDebts(creditCards, cardDebtsListMap);
@@ -1443,35 +1679,35 @@
                 totalInvAssets += val;
 
                 return `
-                    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-2.5">
+                    <div class="card-hover bg-slate-50/70 p-4 rounded-2xl border border-slate-200/80 space-y-3">
                         <div class="flex justify-between items-center">
-                            <div>
+                            <div class="flex items-center gap-2">
                                 <span class="font-bold text-sm text-slate-800">${inv.name}</span>
-                                <span class="text-[10px] text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md font-semibold ml-1">${inv.category}</span>
+                                <span class="text-[10px] text-blue-600 bg-blue-50 border border-blue-200/60 px-2 py-0.5 rounded-full font-semibold">${inv.category}</span>
                             </div>
                             <div class="flex gap-1">
-                                <button onclick="openEditInvModal('${inv.id}')" class="text-blue-600 text-xs px-2 py-0.5 border border-slate-200 bg-white rounded-lg cursor-pointer font-medium">✏️ แก้ไขราคา</button>
-                                <button onclick="deleteInvestment('${inv.id}', '${inv.name}')" class="text-slate-400 hover:text-rose-600 px-1 text-xs cursor-pointer">🗑️</button>
+                                <button onclick="openEditInvModal('${inv.id}')" class="text-blue-600 text-xs px-2.5 py-1 border border-slate-200 bg-white hover:bg-blue-50 rounded-xl cursor-pointer font-semibold transition">✏️ แก้ไขราคา</button>
+                                <button onclick="deleteInvestment('${inv.id}', '${inv.name}')" class="text-slate-400 hover:text-rose-600 p-1 text-xs cursor-pointer"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                             </div>
                         </div>
-                        <div class="grid grid-cols-3 gap-2 text-xs bg-white p-2.5 rounded-xl border border-slate-100">
+                        <div class="grid grid-cols-3 gap-2 text-xs bg-white p-3 rounded-xl border border-slate-100">
                             <div>
                                 <div class="text-[10px] text-slate-400">ต้นทุนที่ซื้อ</div>
-                                <div class="font-semibold text-slate-700">฿${fmt(cost)}</div>
+                                <div class="font-semibold text-slate-700 mt-0.5">฿${fmt(cost)}</div>
                             </div>
                             <div>
                                 <div class="text-[10px] text-slate-400">มูลค่าปัจจุบัน</div>
-                                <div class="font-bold text-slate-900">฿${fmt(val)}</div>
+                                <div class="font-bold text-slate-900 mt-0.5">฿${fmt(val)}</div>
                             </div>
                             <div>
-                                <div class="text-[10px] text-slate-400">จำนวนเงินกำไร/ขาดทุน</div>
-                                <div class="font-extrabold ${profitAmt >= 0 ? 'text-emerald-600' : 'text-rose-600'}">
+                                <div class="text-[10px] text-slate-400">กำไร/ขาดทุน</div>
+                                <div class="font-extrabold mt-0.5 ${profitAmt >= 0 ? 'text-emerald-600' : 'text-rose-600'}">
                                     ${profitAmt >= 0 ? '+฿' : '-฿'}${fmt(Math.abs(profitAmt))} (${profitAmt >= 0 ? '+' : ''}${profitPct.toFixed(2)}%)
                                 </div>
                             </div>
                         </div>
                     </div>`;
-            }).join("") || '<p class="text-xs text-slate-400 col-span-full">ยังไม่มีรายการลงทุน</p>';
+            }).join("") || '<p class="text-xs text-slate-400 col-span-full py-4 text-center">ยังไม่มีรายการลงทุน</p>';
 
             const totalProfitAmt = totalInvAssets - totalInvCost;
             const totalProfitPct = totalInvCost > 0 ? (totalProfitAmt / totalInvCost) * 100 : 0;
@@ -1481,9 +1717,12 @@
             invProfEl.textContent = `${totalProfitAmt >= 0 ? '+฿' : '-฿'}${fmt(Math.abs(totalProfitAmt))} (${totalProfitAmt >= 0 ? '+' : ''}${totalProfitPct.toFixed(2)}%)`;
             invProfEl.className = profitClass(totalProfitAmt);
 
-            // สรุปยอด Net Worth
+            // สรุปยอด Net Worth & สัดส่วนสุขภาพการเงิน
             const totalAssets = totalBankAssets + totalInvAssets;
             const totalLiabilities = totalCreditAll + totalOtherDebts;
+            const sumAll = totalAssets + totalLiabilities;
+            const assetPct = sumAll > 0 ? Math.round((totalAssets / sumAll) * 100) : 100;
+            const liabPct = 100 - assetPct;
 
             document.getElementById("bankTotalText").textContent = `฿${fmt(totalBankAssets)}`;
             document.getElementById("creditTotalText").textContent = `฿${fmt(totalCreditAll)}`;
@@ -1491,9 +1730,12 @@
             document.getElementById("totalCreditAll").textContent = `฿${fmt(totalCreditAll)}`;
             document.getElementById("totalOtherDebts").textContent = `฿${fmt(totalOtherDebts)}`;
             document.getElementById("netWorthDisplay").textContent = `฿${fmt(totalAssets - totalLiabilities)}`;
+            document.getElementById("assetRatioBar").style.width = `${assetPct}%`;
+            document.getElementById("assetRatioText").textContent = `ทรัพย์สิน ${assetPct}% : หนี้สิน ${liabPct}%`;
 
             renderMonthlySummary();
             renderTable();
+            refreshIcons();
         }
 
         function profitClass(val) {
@@ -1513,17 +1755,17 @@
                 const sumMonth = items.reduce((s, d) => s + Math.min(Number(d.installmentAmount || 0), Number(d.remainingAmount || 0)), 0);
 
                 html += `
-                    <div class="p-4 rounded-2xl bg-rose-50/40 border border-rose-200 space-y-3">
-                        <div class="flex flex-wrap justify-between items-center gap-2 pb-2 border-b border-rose-100">
+                    <div class="p-4 rounded-2xl bg-rose-50/40 border border-rose-200/80 space-y-3">
+                        <div class="flex flex-wrap justify-between items-center gap-2 pb-2.5 border-b border-rose-100">
                             <div>
                                 <span class="text-xs font-bold text-rose-800">💳 ${card.name} (ผ่อนอยู่ ${items.length} รายการ)</span>
-                                <div class="text-[11px] text-slate-500">
+                                <div class="text-[11px] text-slate-500 mt-0.5">
                                     ยอดผ่อนคงเหลือรวม: <strong class="text-rose-600">฿${fmt(sumRem)}</strong> |
                                     ค่างวดผ่อน/เดือน: <strong>฿${fmt(sumMonth)}</strong>
                                     ${fullPay > 0 ? ` | จ่ายเต็มปลายเดือน: <strong>฿${fmt(fullPay)}</strong>` : ''}
                                 </div>
                             </div>
-                            <button onclick="openBatchPayCardModal('${card.id}')" class="bg-rose-600 hover:bg-rose-700 text-white px-3.5 py-1.5 rounded-xl text-xs font-semibold cursor-pointer shadow-xs">
+                            <button onclick="openBatchPayCardModal('${card.id}')" class="bg-rose-600 hover:bg-rose-700 text-white px-3.5 py-1.5 rounded-xl text-xs font-semibold cursor-pointer shadow-xs transition">
                                 💸 จ่ายงวดรวมของ ${card.name}
                             </button>
                         </div>
@@ -1548,7 +1790,7 @@
                 if (list.length > 0) {
                     const sumRem = list.reduce((s, d) => s + Number(d.remainingAmount || 0), 0);
                     html += `
-                        <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
+                        <div class="p-4 rounded-2xl bg-slate-50/80 border border-slate-200/80 space-y-3">
                             <div class="flex justify-between items-center pb-2 border-b border-slate-200/70">
                                 <span class="text-xs font-bold text-slate-800">${cat.title} (${list.length} รายการ)</span>
                                 <span class="text-xs text-slate-500">หนี้คงเหลือรวม: <strong class="text-rose-600">฿${fmt(sumRem)}</strong></span>
@@ -1568,7 +1810,7 @@
             const rem = Number(d.remainingAmount || 0);
             const paidPct = total > 0 ? Math.min(100, Math.round(((total - rem) / total) * 100)) : 0;
             return `
-                <div class="bg-white p-3.5 rounded-xl border border-slate-200 space-y-2">
+                <div class="card-hover bg-white p-3.5 rounded-2xl border border-slate-200/80 space-y-2">
                     <div class="flex justify-between items-start">
                         <div>
                             <div class="font-bold text-xs sm:text-sm text-slate-800">${d.name}</div>
@@ -1577,7 +1819,7 @@
                         <div class="flex items-center gap-1">
                             <button onclick="openEditDebtModal('${d.id}')" class="text-blue-600 px-1.5 py-0.5 text-xs hover:bg-blue-50 rounded cursor-pointer">✏️</button>
                             <button onclick="deleteDebt('${d.id}', '${d.name}')" class="text-slate-400 hover:text-rose-600 px-1 text-xs cursor-pointer">🗑️</button>
-                            <button onclick="openPayDebtModal('${d.id}')" class="bg-slate-800 hover:bg-slate-900 text-white px-2.5 py-1 rounded-lg text-[11px] font-medium cursor-pointer">จ่ายเดี่ยว</button>
+                            <button onclick="openPayDebtModal('${d.id}')" class="bg-slate-800 hover:bg-slate-900 text-white px-2.5 py-1 rounded-lg text-[11px] font-semibold cursor-pointer transition">จ่ายเดี่ยว</button>
                         </div>
                     </div>
                     <div class="flex justify-between text-xs text-slate-500">
@@ -1585,12 +1827,12 @@
                         <span>งวดละ: <strong class="text-slate-800">฿${fmt(d.installmentAmount)}</strong></span>
                     </div>
                     <div class="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                        <div class="h-full bg-emerald-500" style="width: ${paidPct}%"></div>
+                        <div class="h-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-500" style="width: ${paidPct}%"></div>
                     </div>
                 </div>`;
         }
 
-        // ================= 6. ตารางความเคลื่อนไหว =================
+        // ================= 6. ตารางความเคลื่อนไหว (Banking Feed Style) =================
         function toggleTxSortOrder() {
             txSortDesc = !txSortDesc;
             document.getElementById("btnSortDate").textContent = txSortDesc ? "📅 เรียง: ล่าสุด ⬇" : "📅 เรียง: เก่าสุด ⬆";
@@ -1617,20 +1859,35 @@
             document.getElementById("txTableBody").innerHTML = list.map(t => {
                 const isInc = t.type === "Income";
                 const isTrf = t.type === "Transfer";
+                const iconBg = isInc ? "bg-emerald-50 text-emerald-600 border-emerald-200/60" : (isTrf ? "bg-blue-50 text-blue-600 border-blue-200/60" : "bg-rose-50 text-rose-600 border-rose-200/60");
+                const iconSym = isInc ? "↙" : (isTrf ? "⇄" : "↗");
+
                 return `
-                    <tr class="hover:bg-slate-50">
-                        <td class="py-2.5 px-2 text-slate-500 font-mono whitespace-nowrap">${cleanDateStr(t.date) || '-'}</td>
-                        <td class="py-2.5 px-2 font-medium text-slate-700">${t.category} ${t.note ? `<span class="text-[11px] text-slate-400">(${t.note})</span>` : ''}</td>
-                        <td class="py-2.5 px-2 text-slate-500">${accMap[t.accountId] || '-'} ${isTrf && t.targetAccountId ? `→ ${accMap[t.targetAccountId] || ''}` : ''}</td>
-                        <td class="py-2.5 px-2 text-right font-bold whitespace-nowrap ${isInc ? 'text-emerald-600' : (isTrf ? 'text-blue-600' : 'text-rose-600')}">
-                            ${isInc ? '+' : (isTrf ? '⇄ ' : '-')}${fmt(t.amount)}
+                    <tr class="hover:bg-slate-50/90 transition">
+                        <td class="py-3 px-2.5 text-slate-500 font-mono whitespace-nowrap">${cleanDateStr(t.date) || '-'}</td>
+                        <td class="py-3 px-2.5">
+                            <div class="flex items-center gap-2.5">
+                                <span class="w-7 h-7 rounded-full border ${iconBg} flex items-center justify-center font-bold text-xs shrink-0">${iconSym}</span>
+                                <div>
+                                    <div class="font-bold text-slate-800">${t.category}</div>
+                                    ${t.note ? `<div class="text-[11px] text-slate-400">${t.note}</div>` : ''}
+                                </div>
+                            </div>
                         </td>
-                        <td class="py-2.5 px-2 text-center whitespace-nowrap">
-                            <button onclick="openEditTxModal('${t.id}')" class="text-blue-600 hover:text-blue-800 mr-2 cursor-pointer font-medium">แก้ไข</button>
-                            <button onclick="deleteTx('${t.id}')" class="text-slate-400 hover:text-rose-600 cursor-pointer font-medium">ลบ</button>
+                        <td class="py-3 px-2.5 text-slate-600">
+                            <span class="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 font-medium text-[11px]">
+                                ${accMap[t.accountId] || '-'} ${isTrf && t.targetAccountId ? `→ ${accMap[t.targetAccountId] || ''}` : ''}
+                            </span>
+                        </td>
+                        <td class="py-3 px-2.5 text-right font-extrabold whitespace-nowrap text-sm ${isInc ? 'text-emerald-600' : (isTrf ? 'text-blue-600' : 'text-rose-600')}">
+                            ${isInc ? '+' : (isTrf ? '⇄ ' : '-')}฿${fmt(t.amount)}
+                        </td>
+                        <td class="py-3 px-2.5 text-center whitespace-nowrap">
+                            <button onclick="openEditTxModal('${t.id}')" class="text-blue-600 hover:bg-blue-50 px-2 py-1 rounded-lg mr-1 cursor-pointer font-semibold transition">แก้ไข</button>
+                            <button onclick="deleteTx('${t.id}')" class="text-slate-400 hover:text-rose-600 hover:bg-rose-50 px-2 py-1 rounded-lg cursor-pointer font-semibold transition">ลบ</button>
                         </td>
                     </tr>`;
-            }).join("") || '<tr><td colspan="5" class="text-center py-6 text-slate-400">ไม่มีข้อมูลรายการเคลื่อนไหว</td></tr>';
+            }).join("") || '<tr><td colspan="5" class="text-center py-8 text-slate-400">ไม่มีข้อมูลรายการเคลื่อนไหว</td></tr>';
         }
 
         function renderChart(selectedMonth = "ALL") {
@@ -1663,6 +1920,7 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    cutout: '68%',
                     plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: { size: 11 } } } }
                 }
             });
