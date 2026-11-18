@@ -978,6 +978,7 @@
             document.getElementById("txCategory").value = "";
             document.getElementById("txNote").value = "";
             document.getElementById("txTargetDiv").classList.toggle("hidden", type !== "Transfer");
+            document.getElementById("btnSortDate").textContent = txSortDesc ? "📅 เรียง: ล่าสุด ⬇" : "📅 เรียง: เก่าสุด ⬆";
 
             const list = type === 'Income'
                 ? state.accounts.filter(a => a.type !== 'CreditCard')
