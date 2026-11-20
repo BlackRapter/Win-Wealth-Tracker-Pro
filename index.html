@@ -650,12 +650,13 @@
         </div>
     </div>
 
-        <!-- MODAL 6: INVESTMENT -->
+    <!-- MODAL 6: INVESTMENT -->
     <div id="invModal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-xs hidden items-center justify-center z-50 p-4">
         <div class="bg-white rounded-3xl p-6 w-full max-w-md space-y-4 shadow-2xl border border-slate-100 modal-animate">
             <h3 id="invModalTitle" class="text-lg font-extrabold text-slate-800">จัดการพอร์ตการลงทุน</h3>
             <form onsubmit="submitInvestment(event)" class="space-y-3.5">
                 <input type="hidden" id="invId">
+                <input type="hidden" id="invMode" value="add">
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 mb-1">ชื่อสินทรัพย์ / กองทุน / หุ้น</label>
                     <input type="text" id="invName" required placeholder="เช่น SCBS&P500, K-USA, หุ้น PTT, ทองคำ" class="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm outline-none">
@@ -664,16 +665,24 @@
                     <label class="block text-xs font-semibold text-slate-600 mb-1">หมวดหมู่</label>
                     <input type="text" id="invCategory" required placeholder="เช่น กองทุนรวม, หุ้นไทย, คริปโต" class="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm outline-none">
                 </div>
+
+                <!-- กล่องกรอกยอดซื้อเพิ่ม (แสดงเฉพาะตอนกดปุ่ม "💰 ซื้อเพิ่ม") -->
+                <div id="invTopUpBox" class="hidden p-3.5 bg-emerald-50/80 border border-emerald-200 rounded-2xl space-y-1.5">
+                    <label class="block text-xs font-bold text-emerald-800">จำนวนเงินที่ซื้อลงทุนเพิ่มในรอบนี้ (บาท)</label>
+                    <input type="number" id="invTopUpAmount" step="0.01" placeholder="ระบุจำนวนเงินที่ซื้อเพิ่ม..." oninput="calcTopUpPreview()" class="w-full border border-emerald-300 bg-white rounded-xl px-3.5 py-2 text-sm font-bold text-emerald-700 outline-none">
+                    <div id="invTopUpHint" class="text-[11px] text-emerald-700"></div>
+                </div>
+
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">ต้นทุนรวมที่ซื้อ (บาท)</label>
-                    <input type="number" id="invCost" step="0.01" required oninput="if(!document.getElementById('invId').value) document.getElementById('invValue').value=this.value" class="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm outline-none">
+                    <label id="invCostLabel" class="block text-xs font-semibold text-slate-600 mb-1">ต้นทุนรวมที่ซื้อ (บาท)</label>
+                    <input type="number" id="invCost" step="0.01" required oninput="if(document.getElementById('invMode').value==='add') document.getElementById('invValue').value=this.value" class="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm outline-none">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">มูลค่าปัจจุบัน (บาท)</label>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">มูลค่าปัจจุบันรวม (บาท)</label>
                     <input type="number" id="invValue" step="0.01" required class="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm font-bold text-emerald-600 outline-none">
                 </div>
 
-                <!-- ส่วนเพิ่มใหม่: ตัวเลือกหักเงินจากบัญชีธนาคาร/เงินสด -->
+                <!-- ตัวเลือกหักเงินจากบัญชีธนาคาร/เงินสด -->
                 <div id="invDeductSection" class="p-3.5 bg-blue-50/70 border border-blue-200/80 rounded-2xl space-y-2.5">
                     <label class="flex items-center gap-2 text-xs font-bold text-blue-900 cursor-pointer">
                         <input type="checkbox" id="invDeductAccount" checked onchange="toggleInvDeductAccount()" class="accent-blue-600 w-4 h-4 rounded">
@@ -692,7 +701,6 @@
             </form>
         </div>
     </div>
-
 
     <!-- JAVASCRIPT LOGIC -->
     <script>
@@ -1369,15 +1377,15 @@
             }
         }
 
-                // ================= 4. ระบบจัดการพอร์ตการลงทุน (เปิดหน้าจอเพิ่ม / แก้ไข / บันทึก) =================
-        
-        // ฟังก์ชันสลับการซ่อน/แสดง Dropdown บัญชีธนาคารในหน้าลงทุน
+        // ================= 4. พอร์ตการลงทุน =================
+        let currentBaseCost = 0;
+        let currentBaseVal = 0;
+
         function toggleInvDeductAccount() {
             const isChecked = document.getElementById("invDeductAccount").checked;
             document.getElementById("invAccountSelectDiv").classList.toggle("hidden", !isChecked);
         }
 
-        // ดึงรายการบัญชีธนาคารและเงินสดมาใส่ใน Dropdown ตัวเลือกหักเงินลงทุน
         function populateInvAccountOptions() {
             const bankAccs = state.accounts.filter(a => a.type !== 'CreditCard');
             const select = document.getElementById("invAccountSelect");
@@ -1386,49 +1394,98 @@
                 : `<option value="">-- ไม่มีบัญชีธนาคาร/เงินสด --</option>`;
         }
 
-        // เปิด Modal เพื่อ "เพิ่มการลงทุนใหม่"
+        // คำนวณต้นทุนรวมและมูลค่ารวมใหม่อัตโนมัติเวลาพิมพ์ยอดซื้อเพิ่ม (DCA)
+        function calcTopUpPreview() {
+            const addAmt = Number(document.getElementById("invTopUpAmount").value || 0);
+            document.getElementById("invCost").value = (currentBaseCost + addAmt).toFixed(2);
+            document.getElementById("invValue").value = (currentBaseVal + addAmt).toFixed(2);
+        }
+
+        // 1. โหมดเพิ่มสินทรัพย์ตัวใหม่
         function openAddInvModal() {
-            document.getElementById("invModalTitle").textContent = "+ เพิ่มรายการลงทุน";
+            document.getElementById("invModalTitle").textContent = "+ เพิ่มรายการลงทุนใหม่";
+            document.getElementById("invMode").value = "add";
             document.getElementById("invId").value = "";
             document.getElementById("invName").value = "";
+            document.getElementById("invName").readOnly = false;
             document.getElementById("invCategory").value = "กองทุนรวม";
+            document.getElementById("invCategory").readOnly = false;
+            document.getElementById("invTopUpBox").classList.add("hidden");
+            document.getElementById("invTopUpAmount").value = "";
             document.getElementById("invCost").value = "";
+            document.getElementById("invCost").readOnly = false;
             document.getElementById("invValue").value = "";
-            
-            // แสดงส่วนเลือกว่าจะหักเงินหรือไม่ และเปิดใช้งานตัวเลือกหักเงินแบบเริ่มต้น
+
             document.getElementById("invDeductSection").classList.remove("hidden");
             document.getElementById("invDeductAccount").checked = true;
-            
             populateInvAccountOptions();
             toggleInvDeductAccount();
-            
             openModal('invModal');
         }
 
-        // เปิด Modal เพื่อ "แก้ไขมูลค่าปัจจุบัน / อัปเดตราคาพอร์ต"
+        // 2. โหมดซื้อลงทุนเพิ่มในตัวเดิม (DCA)
+        function openTopUpInvModal(invId) {
+            const inv = state.investments.find(i => i.id === invId);
+            if (!inv) return;
+            currentBaseCost = Number(inv.cost || 0);
+            currentBaseVal = Number(inv.value || 0);
+
+            document.getElementById("invModalTitle").textContent = `💰 ซื้อลงทุนเพิ่ม: ${inv.name}`;
+            document.getElementById("invMode").value = "topup";
+            document.getElementById("invId").value = inv.id;
+            document.getElementById("invName").value = inv.name;
+            document.getElementById("invName").readOnly = true;
+            document.getElementById("invCategory").value = inv.category;
+            document.getElementById("invCategory").readOnly = true;
+
+            document.getElementById("invTopUpBox").classList.remove("hidden");
+            document.getElementById("invTopUpAmount").value = "";
+            document.getElementById("invTopUpHint").textContent = `ต้นทุนเดิม: ฿${fmt(currentBaseCost)} | มูลค่าเดิม: ฿${fmt(currentBaseVal)}`;
+
+            document.getElementById("invCost").value = currentBaseCost;
+            document.getElementById("invCost").readOnly = true;
+            document.getElementById("invValue").value = currentBaseVal;
+
+            document.getElementById("invDeductSection").classList.remove("hidden");
+            document.getElementById("invDeductAccount").checked = true;
+            populateInvAccountOptions();
+            toggleInvDeductAccount();
+            openModal('invModal');
+        }
+
+        // 3. โหมดแก้ไขมูลค่าปัจจุบัน (ปรับราคาตลาด ไม่หักเงินบัญชี)
         function openEditInvModal(invId) {
             const inv = state.investments.find(i => i.id === invId);
             if (!inv) return;
             document.getElementById("invModalTitle").textContent = "✏️ แก้ไขต้นทุน / มูลค่าปัจจุบัน";
+            document.getElementById("invMode").value = "edit";
             document.getElementById("invId").value = inv.id;
             document.getElementById("invName").value = inv.name;
+            document.getElementById("invName").readOnly = false;
             document.getElementById("invCategory").value = inv.category;
+            document.getElementById("invCategory").readOnly = false;
+            document.getElementById("invTopUpBox").classList.add("hidden");
+            document.getElementById("invTopUpAmount").value = "";
             document.getElementById("invCost").value = inv.cost;
+            document.getElementById("invCost").readOnly = false;
             document.getElementById("invValue").value = inv.value;
-            
-            // ซ่อนตัวเลือกลดเงินบัญชี เพราะเป็นการแก้ไขยอดเพื่อบันทึกการเติบโต/ปรับราคาย้อนหลัง เงินในธนาคารจะไม่ลดซ้ำสอง
+
             document.getElementById("invDeductSection").classList.add("hidden");
-            
             openModal('invModal');
         }
 
-        // ฟังก์ชันเมื่อกดยืนยันบันทึกข้อมูลการลงทุน
         async function submitInvestment(e) {
             e.preventDefault();
             const id = document.getElementById("invId").value;
-            
-            // จะหักบัญชีธนาคารก็ต่อเมื่อเป็นการ "เพิ่มตัวเลือกการลงทุนใหม่" เท่านั้น และผู้ใช้ติ๊กเลือกหักเงิน
-            const deduct = !id && document.getElementById("invDeductAccount").checked;
+            const mode = document.getElementById("invMode").value;
+            const topUpAmt = mode === "topup" ? Number(document.getElementById("invTopUpAmount").value || 0) : 0;
+
+            if (mode === "topup" && topUpAmt <= 0) {
+                alert("กรุณาระบุจำนวนเงินที่ต้องการซื้อลงทุนเพิ่ม");
+                return;
+            }
+
+            const deduct = (mode === "add" || mode === "topup") && document.getElementById("invDeductAccount").checked;
             const accountId = deduct ? document.getElementById("invAccountSelect").value : "";
 
             const payload = {
@@ -1440,28 +1497,22 @@
                     cost: document.getElementById("invCost").value,
                     value: document.getElementById("invValue").value,
                     deductAccount: deduct,
-                    accountId: accountId
+                    accountId: accountId,
+                    topUpAmount: topUpAmt
                 }
             };
-            
             const res = await apiCall(payload);
             if (res && res.status === "success") {
                 closeModal('invModal');
-                fetchData(); // อัปเดตข้อมูลบนหน้าจอใหม่ทั้งหมดทันที
-            } else {
-                alert(res ? res.message : "เกิดข้อผิดพลาดในการบันทึกข้อมูลพอร์ต");
-            }
+                fetchData();
+            } else alert(res ? res.message : "เกิดข้อผิดพลาด");
         }
 
-        // ฟังก์ชันสำหรับลบการลงทุน
-        async function deleteInvestment(invId, invName) {
-            if (!confirm(`คุณต้องการลบสินทรัพย์ลงทุน "${invName}" ออกจากพอร์ตใช่หรือไม่?\n(ข้อมูลประวัติการทำรายการโอนเงินในอดีตจะยังคงอยู่)`)) return;
-            const res = await apiCall({ action: "deleteInvestment", data: { id: invId } });
-            if (res && res.status === "success") {
-                fetchData();
-            } else {
-                alert(res ? res.message : "เกิดข้อผิดพลาด");
-            }
+        async function deleteInvestment(id, name) {
+            if (!confirm(`ยืนยันลบรายการลงทุน "${name}"?`)) return;
+            const res = await apiCall({ action: "deleteInvestment", data: { id } });
+            if (res && res.status === "success") fetchData();
+            else alert(res ? res.message : "เกิดข้อผิดพลาด");
         }
         
         // ================= 5. สรุปรายรับ-รายจ่าย รายเดือน =================
@@ -1776,12 +1827,13 @@
 
                 return `
                     <div class="card-hover bg-slate-50/70 p-4 rounded-2xl border border-slate-200/80 space-y-3">
-                        <div class="flex justify-between items-center">
+                        <div class="flex flex-wrap justify-between items-center gap-2">
                             <div class="flex items-center gap-2">
                                 <span class="font-bold text-sm text-slate-800">${inv.name}</span>
                                 <span class="text-[10px] text-blue-600 bg-blue-50 border border-blue-200/60 px-2 py-0.5 rounded-full font-semibold">${inv.category}</span>
                             </div>
-                            <div class="flex gap-1">
+                            <div class="flex items-center gap-1">
+                                <button onclick="openTopUpInvModal('${inv.id}')" class="text-emerald-700 text-xs px-2.5 py-1 border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 rounded-xl cursor-pointer font-bold transition">💰 ซื้อเพิ่ม</button>
                                 <button onclick="openEditInvModal('${inv.id}')" class="text-blue-600 text-xs px-2.5 py-1 border border-slate-200 bg-white hover:bg-blue-50 rounded-xl cursor-pointer font-semibold transition">✏️ แก้ไขราคา</button>
                                 <button onclick="deleteInvestment('${inv.id}', '${inv.name}')" class="text-slate-400 hover:text-rose-600 p-1 text-xs cursor-pointer"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                             </div>
@@ -1804,6 +1856,7 @@
                         </div>
                     </div>`;
             }).join("") || '<p class="text-xs text-slate-400 col-span-full py-4 text-center">ยังไม่มีรายการลงทุน</p>';
+
 
             const totalProfitAmt = totalInvAssets - totalInvCost;
             const totalProfitPct = totalInvCost > 0 ? (totalProfitAmt / totalInvCost) * 100 : 0;
