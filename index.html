@@ -301,28 +301,44 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <!-- 1. รายรับ -->
                     <div class="p-4 rounded-2xl bg-gradient-to-br from-emerald-50/90 to-teal-50/50 border border-emerald-100 flex items-center justify-between">
                         <div>
-                            <div class="text-xs text-emerald-700 font-medium">รายรับรวมเดือนที่เลือก</div>
+                            <div class="text-xs text-emerald-700 font-medium">รายรับรวม</div>
                             <div id="monthlyIncomeText" class="text-xl font-extrabold text-emerald-600 mt-1">฿0.00</div>
                         </div>
                         <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
                             <i data-lucide="arrow-down-left" class="w-5 h-5"></i>
                         </div>
                     </div>
+
+                    <!-- 2. รายจ่าย -->
                     <div class="p-4 rounded-2xl bg-gradient-to-br from-rose-50/90 to-pink-50/50 border border-rose-100 flex items-center justify-between">
                         <div>
-                            <div class="text-xs text-rose-700 font-medium">รายจ่ายรวมเดือนที่เลือก</div>
+                            <div class="text-xs text-rose-700 font-medium">รายจ่ายรวม (ไม่รวมลงทุน)</div>
                             <div id="monthlyExpenseText" class="text-xl font-extrabold text-rose-600 mt-1">฿0.00</div>
                         </div>
                         <div class="w-10 h-10 rounded-xl bg-rose-500/10 text-rose-600 flex items-center justify-center">
                             <i data-lucide="arrow-up-right" class="w-5 h-5"></i>
                         </div>
                     </div>
-                    <div class="p-4 rounded-2xl bg-gradient-to-br from-blue-50/90 to-indigo-50/50 border border-blue-100 flex items-center justify-between">
+
+                    <!-- 3. เงินที่นำไปลงทุน (เพิ่มใหม่) -->
+                    <div class="p-4 rounded-2xl bg-gradient-to-br from-indigo-50/90 to-purple-50/50 border border-indigo-100 flex items-center justify-between">
                         <div>
-                            <div class="text-xs text-blue-700 font-medium">คงเหลือสุทธิ (รับ - จ่าย)</div>
+                            <div class="text-xs text-indigo-700 font-medium">เงินโอนไปลงทุน</div>
+                            <div id="monthlyInvestmentText" class="text-xl font-extrabold text-indigo-600 mt-1">฿0.00</div>
+                        </div>
+                        <div class="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-600 flex items-center justify-center">
+                            <i data-lucide="trending-up" class="w-5 h-5"></i>
+                        </div>
+                    </div>
+
+                    <!-- 4. คงเหลือสุทธิ -->
+                    <div class="p-4 rounded-2xl bg-gradient-to-br from-blue-50/90 to-cyan-50/50 border border-blue-100 flex items-center justify-between">
+                        <div>
+                            <div class="text-xs text-blue-700 font-medium">คงเหลือหลังลงทุน</div>
                             <div id="monthlyNetText" class="text-xl font-extrabold text-blue-600 mt-1">฿0.00</div>
                         </div>
                         <div class="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center">
@@ -339,9 +355,11 @@
                                     <th class="py-3 px-3.5 font-semibold">เดือน/ปี</th>
                                     <th class="py-3 px-3.5 text-right text-emerald-600 font-semibold">รายรับ</th>
                                     <th class="py-3 px-3.5 text-right text-rose-600 font-semibold">รายจ่าย</th>
-                                    <th class="py-3 px-3.5 text-right font-semibold">คงเหลือสุทธิ</th>
+                                    <th class="py-3 px-3.5 text-right text-indigo-600 font-semibold">ลงทุน</th>
+                                    <th class="py-3 px-3.5 text-right font-semibold">คงเหลือ</th>
                                 </tr>
                             </thead>
+
                             <tbody id="monthlyTableBody" class="divide-y divide-slate-100"></tbody>
                         </table>
                     </div>
@@ -632,7 +650,7 @@
         </div>
     </div>
 
-    <!-- MODAL 6: INVESTMENT -->
+        <!-- MODAL 6: INVESTMENT -->
     <div id="invModal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-xs hidden items-center justify-center z-50 p-4">
         <div class="bg-white rounded-3xl p-6 w-full max-w-md space-y-4 shadow-2xl border border-slate-100 modal-animate">
             <h3 id="invModalTitle" class="text-lg font-extrabold text-slate-800">จัดการพอร์ตการลงทุน</h3>
@@ -648,12 +666,25 @@
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 mb-1">ต้นทุนรวมที่ซื้อ (บาท)</label>
-                    <input type="number" id="invCost" step="0.01" required class="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm outline-none">
+                    <input type="number" id="invCost" step="0.01" required oninput="if(!document.getElementById('invId').value) document.getElementById('invValue').value=this.value" class="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm outline-none">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 mb-1">มูลค่าปัจจุบัน (บาท)</label>
                     <input type="number" id="invValue" step="0.01" required class="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm font-bold text-emerald-600 outline-none">
                 </div>
+
+                <!-- ส่วนเพิ่มใหม่: ตัวเลือกหักเงินจากบัญชีธนาคาร/เงินสด -->
+                <div id="invDeductSection" class="p-3.5 bg-blue-50/70 border border-blue-200/80 rounded-2xl space-y-2.5">
+                    <label class="flex items-center gap-2 text-xs font-bold text-blue-900 cursor-pointer">
+                        <input type="checkbox" id="invDeductAccount" checked onchange="toggleInvDeductAccount()" class="accent-blue-600 w-4 h-4 rounded">
+                        <span>โอน/หักเงินจากบัญชีธนาคารหรือเงินสดทันที</span>
+                    </label>
+                    <div id="invAccountSelectDiv" class="space-y-1">
+                        <label class="block text-[11px] font-semibold text-slate-600">เลือกบัญชีที่ต้องการหักเงิน:</label>
+                        <select id="invAccountSelect" class="w-full border border-blue-200 rounded-xl px-3 py-2 text-xs bg-white outline-none"></select>
+                    </div>
+                </div>
+
                 <div class="flex justify-end gap-2 pt-3">
                     <button type="button" onclick="closeModal('invModal')" class="px-4 py-2.5 text-xs font-semibold text-slate-500 hover:bg-slate-100 rounded-xl cursor-pointer transition">ยกเลิก</button>
                     <button type="submit" class="px-5 py-2.5 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold shadow-md shadow-blue-600/20 cursor-pointer transition">บันทึกข้อมูล</button>
@@ -661,6 +692,7 @@
             </form>
         </div>
     </div>
+
 
     <!-- JAVASCRIPT LOGIC -->
     <script>
@@ -1337,7 +1369,24 @@
             }
         }
 
-        // ================= 4. พอร์ตการลงทุน =================
+                // ================= 4. ระบบจัดการพอร์ตการลงทุน (เปิดหน้าจอเพิ่ม / แก้ไข / บันทึก) =================
+        
+        // ฟังก์ชันสลับการซ่อน/แสดง Dropdown บัญชีธนาคารในหน้าลงทุน
+        function toggleInvDeductAccount() {
+            const isChecked = document.getElementById("invDeductAccount").checked;
+            document.getElementById("invAccountSelectDiv").classList.toggle("hidden", !isChecked);
+        }
+
+        // ดึงรายการบัญชีธนาคารและเงินสดมาใส่ใน Dropdown ตัวเลือกหักเงินลงทุน
+        function populateInvAccountOptions() {
+            const bankAccs = state.accounts.filter(a => a.type !== 'CreditCard');
+            const select = document.getElementById("invAccountSelect");
+            select.innerHTML = bankAccs.length
+                ? bankAccs.map(acc => `<option value="${acc.id}">🏦 ${acc.name} (คงเหลือ: ฿${fmt(acc.balance)})</option>`).join("")
+                : `<option value="">-- ไม่มีบัญชีธนาคาร/เงินสด --</option>`;
+        }
+
+        // เปิด Modal เพื่อ "เพิ่มการลงทุนใหม่"
         function openAddInvModal() {
             document.getElementById("invModalTitle").textContent = "+ เพิ่มรายการลงทุน";
             document.getElementById("invId").value = "";
@@ -1345,9 +1394,18 @@
             document.getElementById("invCategory").value = "กองทุนรวม";
             document.getElementById("invCost").value = "";
             document.getElementById("invValue").value = "";
+            
+            // แสดงส่วนเลือกว่าจะหักเงินหรือไม่ และเปิดใช้งานตัวเลือกหักเงินแบบเริ่มต้น
+            document.getElementById("invDeductSection").classList.remove("hidden");
+            document.getElementById("invDeductAccount").checked = true;
+            
+            populateInvAccountOptions();
+            toggleInvDeductAccount();
+            
             openModal('invModal');
         }
 
+        // เปิด Modal เพื่อ "แก้ไขมูลค่าปัจจุบัน / อัปเดตราคาพอร์ต"
         function openEditInvModal(invId) {
             const inv = state.investments.find(i => i.id === invId);
             if (!inv) return;
@@ -1357,12 +1415,22 @@
             document.getElementById("invCategory").value = inv.category;
             document.getElementById("invCost").value = inv.cost;
             document.getElementById("invValue").value = inv.value;
+            
+            // ซ่อนตัวเลือกลดเงินบัญชี เพราะเป็นการแก้ไขยอดเพื่อบันทึกการเติบโต/ปรับราคาย้อนหลัง เงินในธนาคารจะไม่ลดซ้ำสอง
+            document.getElementById("invDeductSection").classList.add("hidden");
+            
             openModal('invModal');
         }
 
+        // ฟังก์ชันเมื่อกดยืนยันบันทึกข้อมูลการลงทุน
         async function submitInvestment(e) {
             e.preventDefault();
             const id = document.getElementById("invId").value;
+            
+            // จะหักบัญชีธนาคารก็ต่อเมื่อเป็นการ "เพิ่มตัวเลือกการลงทุนใหม่" เท่านั้น และผู้ใช้ติ๊กเลือกหักเงิน
+            const deduct = !id && document.getElementById("invDeductAccount").checked;
+            const accountId = deduct ? document.getElementById("invAccountSelect").value : "";
+
             const payload = {
                 action: id ? "updateInvestment" : "addInvestment",
                 data: {
@@ -1370,23 +1438,32 @@
                     name: document.getElementById("invName").value.trim(),
                     category: document.getElementById("invCategory").value.trim(),
                     cost: document.getElementById("invCost").value,
-                    value: document.getElementById("invValue").value
+                    value: document.getElementById("invValue").value,
+                    deductAccount: deduct,
+                    accountId: accountId
                 }
             };
+            
             const res = await apiCall(payload);
             if (res && res.status === "success") {
                 closeModal('invModal');
+                fetchData(); // อัปเดตข้อมูลบนหน้าจอใหม่ทั้งหมดทันที
+            } else {
+                alert(res ? res.message : "เกิดข้อผิดพลาดในการบันทึกข้อมูลพอร์ต");
+            }
+        }
+
+        // ฟังก์ชันสำหรับลบการลงทุน
+        async function deleteInvestment(invId, invName) {
+            if (!confirm(`คุณต้องการลบสินทรัพย์ลงทุน "${invName}" ออกจากพอร์ตใช่หรือไม่?\n(ข้อมูลประวัติการทำรายการโอนเงินในอดีตจะยังคงอยู่)`)) return;
+            const res = await apiCall({ action: "deleteInvestment", data: { id: invId } });
+            if (res && res.status === "success") {
                 fetchData();
-            } else alert(res ? res.message : "เกิดข้อผิดพลาด");
+            } else {
+                alert(res ? res.message : "เกิดข้อผิดพลาด");
+            }
         }
-
-        async function deleteInvestment(id, name) {
-            if (!confirm(`ต้องการลบรายการลงทุน "${name}" ใช่หรือไม่?`)) return;
-            const res = await apiCall({ action: "deleteInvestment", data: { id } });
-            if (res && res.status === "success") fetchData();
-            else alert(res ? res.message : "เกิดข้อผิดพลาด");
-        }
-
+        
         // ================= 5. สรุปรายรับ-รายจ่าย รายเดือน =================
         function populateMonthFilter() {
             const monthsSet = new Set();
@@ -1419,23 +1496,38 @@
             state.transactions.forEach(t => {
                 const d = cleanDateStr(t.date);
                 const m = (d && d.length >= 7) ? d.slice(0, 7) : "ไม่ระบุ";
-                if (!monthMap[m]) monthMap[m] = { income: 0, expense: 0 };
+                if (!monthMap[m]) monthMap[m] = { income: 0, expense: 0, investment: 0 };
                 const amt = Number(t.amount || 0);
-                if (t.type === "Income") monthMap[m].income += amt;
-                else if (t.type === "Expense") monthMap[m].expense += amt;
+
+                if (t.type === "Income") {
+                    monthMap[m].income += amt;
+                } else if (t.type === "Expense") {
+                    monthMap[m].expense += amt;
+                } else if (t.type === "Investment") {
+                    monthMap[m].investment += amt; // บันทึกสะสมยอดลงทุน
+                }
             });
 
-            let selInc = 0, selExp = 0;
+            let selInc = 0, selExp = 0, selInv = 0;
             if (selectedMonth === "ALL") {
-                Object.values(monthMap).forEach(v => { selInc += v.income; selExp += v.expense; });
+                Object.values(monthMap).forEach(v => { 
+                    selInc += v.income; 
+                    selExp += v.expense; 
+                    selInv += v.investment;
+                });
             } else if (monthMap[selectedMonth]) {
                 selInc = monthMap[selectedMonth].income;
                 selExp = monthMap[selectedMonth].expense;
+                selInv = monthMap[selectedMonth].investment;
             }
-            const selNet = selInc - selExp;
+            
+            // คงเหลือสุทธิ = รายรับ - รายจ่าย - เงินที่โอนไปลงทุน
+            const selNet = selInc - selExp - selInv;
 
             document.getElementById("monthlyIncomeText").textContent = `฿${fmt(selInc)}`;
             document.getElementById("monthlyExpenseText").textContent = `฿${fmt(selExp)}`;
+            document.getElementById("monthlyInvestmentText").textContent = `฿${fmt(selInv)}`;
+            
             const netEl = document.getElementById("monthlyNetText");
             netEl.textContent = `${selNet >= 0 ? '+' : ''}฿${fmt(selNet)}`;
             netEl.className = `text-xl font-extrabold mt-1 ${selNet >= 0 ? 'text-blue-600' : 'text-rose-600'}`;
@@ -1444,17 +1536,20 @@
             document.getElementById("monthlyTableBody").innerHTML = sortedKeys.map(m => {
                 const inc = monthMap[m].income;
                 const exp = monthMap[m].expense;
-                const net = inc - exp;
+                const inv = monthMap[m].investment;
+                const net = inc - exp - inv;
                 return `
                     <tr class="hover:bg-slate-50 transition cursor-pointer ${m === selectedMonth ? 'bg-blue-50/60 font-semibold' : ''}" onclick="document.getElementById('monthFilter').value='${m}'; renderMonthlySummary();">
                         <td class="py-3 px-3.5 text-slate-700">${m}</td>
                         <td class="py-3 px-3.5 text-right text-emerald-600">+฿${fmt(inc)}</td>
                         <td class="py-3 px-3.5 text-right text-rose-600">-฿${fmt(exp)}</td>
+                        <td class="py-3 px-3.5 text-right text-indigo-600">฿${fmt(inv)}</td>
                         <td class="py-3 px-3.5 text-right font-bold ${net >= 0 ? 'text-blue-600' : 'text-rose-600'}">${net >= 0 ? '+' : ''}฿${fmt(net)}</td>
                     </tr>`;
-            }).join("") || `<tr><td colspan="4" class="text-center py-6 text-slate-400">ยังไม่มีข้อมูลรายเดือน</td></tr>`;
+            }).join("") || `<tr><td colspan="5" class="text-center py-6 text-slate-400">ยังไม่มีข้อมูลรายเดือน</td></tr>`;
 
             renderChart(selectedMonth);
+            refreshIcons();
         }
 
         // ================= RENDER DASHBOARD (พร้อมระบบวงเงินร่วม + Visual Credit Card UI) =================
