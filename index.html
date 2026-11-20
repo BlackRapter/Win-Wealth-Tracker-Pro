@@ -1858,11 +1858,33 @@
                     return txSortDesc ? (db > da ? 1 : -1) : (da > db ? 1 : -1);
                 });
 
-            document.getElementById("txTableBody").innerHTML = list.map(t => {
+                        document.getElementById("txTableBody").innerHTML = list.map(t => {
                 const isInc = t.type === "Income";
                 const isTrf = t.type === "Transfer";
-                const iconBg = isInc ? "bg-emerald-50 text-emerald-600 border-emerald-200/60" : (isTrf ? "bg-blue-50 text-blue-600 border-blue-200/60" : "bg-rose-50 text-rose-600 border-rose-200/60");
-                const iconSym = isInc ? "↙" : (isTrf ? "⇄" : "↗");
+                const isInv = t.type === "Investment"; // เพิ่มการเช็คประเภท Investment
+
+                // กำหนดสีและไอคอนเฉพาะ
+                let iconBg = "bg-rose-50 text-rose-600 border-rose-200/60";
+                let iconSym = "↗";
+                let textCol = "text-rose-600";
+                let sign = "-";
+
+                if (isInc) {
+                    iconBg = "bg-emerald-50 text-emerald-600 border-emerald-200/60";
+                    iconSym = "↙";
+                    textCol = "text-emerald-600";
+                    sign = "+";
+                } else if (isTrf) {
+                    iconBg = "bg-blue-50 text-blue-600 border-blue-200/60";
+                    iconSym = "⇄";
+                    textCol = "text-blue-600";
+                    sign = "⇄ ";
+                } else if (isInv) {
+                    iconBg = "bg-indigo-50 text-indigo-600 border-indigo-200/60";
+                    iconSym = "📈";
+                    textCol = "text-indigo-600";
+                    sign = "→ ";
+                }
 
                 return `
                     <tr class="hover:bg-slate-50/90 transition">
@@ -1881,8 +1903,8 @@
                                 ${accMap[t.accountId] || '-'} ${isTrf && t.targetAccountId ? `→ ${accMap[t.targetAccountId] || ''}` : ''}
                             </span>
                         </td>
-                        <td class="py-3 px-2.5 text-right font-extrabold whitespace-nowrap text-sm ${isInc ? 'text-emerald-600' : (isTrf ? 'text-blue-600' : 'text-rose-600')}">
-                            ${isInc ? '+' : (isTrf ? '⇄ ' : '-')}฿${fmt(t.amount)}
+                        <td class="py-3 px-2.5 text-right font-extrabold whitespace-nowrap text-sm ${textCol}">
+                            ${sign}฿${fmt(t.amount)}
                         </td>
                         <td class="py-3 px-2.5 text-center whitespace-nowrap">
                             <button onclick="openEditTxModal('${t.id}')" class="text-blue-600 hover:bg-blue-50 px-2 py-1 rounded-lg mr-1 cursor-pointer font-semibold transition">แก้ไข</button>
