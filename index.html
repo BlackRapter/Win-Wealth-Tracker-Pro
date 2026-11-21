@@ -701,6 +701,71 @@
             </form>
         </div>
     </div>
+    
+    <!-- MODAL 6.1: SELL / WITHDRAW INVESTMENT -->
+    <div id="sellInvModal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-xs hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-3xl p-6 w-full max-w-md space-y-4 shadow-2xl border border-slate-100 modal-animate">
+            <div class="flex justify-between items-center">
+                <h3 class="text-lg font-extrabold text-slate-800">💵 ขาย / ถอนเงินลงทุนเข้าบัญชี</h3>
+                <span id="sellInvBadge" class="text-xs bg-amber-50 text-amber-700 border border-amber-200 px-2.5 py-0.5 rounded-full font-bold"></span>
+            </div>
+
+            <form onsubmit="submitSellInvestment(event)" class="space-y-3.5">
+                <input type="hidden" id="sellInvId">
+
+                <!-- ข้อมูลสรุปพอร์ตเดิม -->
+                <div class="p-3 bg-slate-50 border border-slate-200 rounded-2xl grid grid-cols-2 gap-2 text-xs">
+                    <div>
+                        <span class="text-slate-400">ต้นทุนปัจจุบัน:</span>
+                        <div id="sellInvCurCost" class="font-bold text-slate-700 text-sm mt-0.5">฿0.00</div>
+                    </div>
+                    <div>
+                        <span class="text-slate-400">มูลค่าปัจจุบัน:</span>
+                        <div id="sellInvCurVal" class="font-extrabold text-emerald-600 text-sm mt-0.5">฿0.00</div>
+                    </div>
+                </div>
+
+                <!-- รูปแบบการขาย: ขายหมด หรือ ขายบางส่วน -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1.5">รูปแบบการขาย</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <label class="flex items-center justify-center gap-1.5 p-2.5 border rounded-xl cursor-pointer text-xs font-bold transition has-checked:bg-amber-50 has-checked:border-amber-400 has-checked:text-amber-800 border-slate-200 text-slate-600">
+                            <input type="radio" name="sellOption" value="partial" checked onchange="toggleSellMode()" class="hidden">
+                            <span>ขายบางส่วน</span>
+                        </label>
+                        <label class="flex items-center justify-center gap-1.5 p-2.5 border rounded-xl cursor-pointer text-xs font-bold transition has-checked:bg-amber-50 has-checked:border-amber-400 has-checked:text-amber-800 border-slate-200 text-slate-600">
+                            <input type="radio" name="sellOption" value="all" onchange="toggleSellMode()" class="hidden">
+                            <span>ขายทั้งหมด (ปิดพอร์ต)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- ยอดเงินที่ขายได้จริง -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">ยอดเงินที่ขายได้/ได้รับเงินจริง (บาท)</label>
+                    <input type="number" id="sellAmount" step="0.01" required placeholder="0.00" oninput="calcSellCostRatio()" class="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm font-bold text-amber-700 outline-none">
+                </div>
+
+                <!-- สัดส่วนต้นทุนที่ลดลง -->
+                <div id="sellCostDiv">
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">สัดส่วนต้นทุนที่จะหักออก (บาท)</label>
+                    <input type="number" id="sellCostDeducted" step="0.01" required placeholder="0.00" class="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-700 outline-none">
+                    <span class="text-[11px] text-slate-400">*คำนวณตามสัดส่วนมูลค่าให้อัตโนมัติ หรือแก้ไขเองได้</span>
+                </div>
+
+                <!-- เลือกบัญชีธนาคารที่จะโอนเงินเข้า -->
+                <div class="p-3.5 bg-emerald-50/70 border border-emerald-200 rounded-2xl space-y-1.5">
+                    <label class="block text-xs font-bold text-emerald-900">โอนเงินเข้าบัญชีธนาคาร/เงินสด:</label>
+                    <select id="sellTargetAccount" required class="w-full border border-emerald-300 rounded-xl px-3 py-2 text-xs bg-white outline-none font-semibold"></select>
+                </div>
+
+                <div class="flex justify-end gap-2 pt-3">
+                    <button type="button" onclick="closeModal('sellInvModal')" class="px-4 py-2.5 text-xs font-semibold text-slate-500 hover:bg-slate-100 rounded-xl cursor-pointer transition">ยกเลิก</button>
+                    <button type="submit" class="px-5 py-2.5 text-xs bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-bold shadow-md shadow-amber-600/20 cursor-pointer transition">ยืนยันการขายและรับเงิน</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <!-- JAVASCRIPT LOGIC -->
     <script>
@@ -1514,7 +1579,98 @@
             if (res && res.status === "success") fetchData();
             else alert(res ? res.message : "เกิดข้อผิดพลาด");
         }
-        
+
+        let activeSellInv = null;
+
+        function openSellInvModal(invId) {
+            const inv = state.investments.find(i => i.id === invId);
+            if (!inv) return;
+            activeSellInv = inv;
+
+            document.getElementById("sellInvId").value = inv.id;
+            document.getElementById("sellInvBadge").textContent = `${inv.name} (${inv.category})`;
+            document.getElementById("sellInvCurCost").textContent = `฿${fmt(inv.cost)}`;
+            document.getElementById("sellInvCurVal").textContent = `฿${fmt(inv.value)}`;
+
+            document.querySelector("input[name='sellOption'][value='partial']").checked = true;
+            document.getElementById("sellAmount").value = "";
+            document.getElementById("sellCostDeducted").value = "";
+            document.getElementById("sellCostDeducted").readOnly = false;
+            document.getElementById("sellCostDiv").classList.remove("hidden");
+
+            const bankAccs = state.accounts.filter(a => a.type !== 'CreditCard');
+            document.getElementById("sellTargetAccount").innerHTML = bankAccs.map(acc => 
+                `<option value="${acc.id}">🏦 ${acc.name} (คงเหลือ: ฿${fmt(acc.balance)})</option>`
+            ).join("");
+
+            openModal('sellInvModal');
+        }
+
+        function toggleSellMode() {
+            if (!activeSellInv) return;
+            const mode = document.querySelector("input[name='sellOption']:checked").value;
+            const amtEl = document.getElementById("sellAmount");
+            const costEl = document.getElementById("sellCostDeducted");
+
+            if (mode === "all") {
+                amtEl.value = Number(activeSellInv.value || 0);
+                costEl.value = Number(activeSellInv.cost || 0);
+                costEl.readOnly = true;
+            } else {
+                amtEl.value = "";
+                costEl.value = "";
+                costEl.readOnly = false;
+            }
+        }
+
+        function calcSellCostRatio() {
+            if (!activeSellInv) return;
+            const isAll = document.querySelector("input[name='sellOption']:checked").value === "all";
+            if (isAll) return;
+
+            const sellAmt = Number(document.getElementById("sellAmount").value || 0);
+            const curVal = Number(activeSellInv.value || 0);
+            const curCost = Number(activeSellInv.cost || 0);
+
+            if (curVal > 0 && sellAmt > 0) {
+                const ratio = Math.min(1, sellAmt / curVal);
+                document.getElementById("sellCostDeducted").value = (curCost * ratio).toFixed(2);
+            }
+        }
+
+        async function submitSellInvestment(e) {
+            e.preventDefault();
+            const id = document.getElementById("sellInvId").value;
+            const sellAmt = Number(document.getElementById("sellAmount").value || 0);
+            const costDed = Number(document.getElementById("sellCostDeducted").value || 0);
+            const accountId = document.getElementById("sellTargetAccount").value;
+            const isSellAll = document.querySelector("input[name='sellOption']:checked").value === "all";
+
+            if (sellAmt <= 0) {
+                alert("กรุณาระบุจำนวนเงินที่ขายได้");
+                return;
+            }
+
+            const payload = {
+                action: "sellInvestment",
+                data: {
+                    id: id,
+                    sellAmount: sellAmt,
+                    costDeducted: costDed,
+                    accountId: accountId,
+                    isSellAll: isSellAll
+                }
+            };
+
+            const res = await apiCall(payload);
+            if (res && res.status === "success") {
+                closeModal('sellInvModal');
+                fetchData();
+            } else {
+                alert(res ? res.message : "เกิดข้อผิดพลาดในการทำรายการขาย");
+            }
+        }
+
         // ================= 5. สรุปรายรับ-รายจ่าย รายเดือน =================
         function populateMonthFilter() {
             const monthsSet = new Set();
@@ -1552,6 +1708,8 @@
 
                 if (t.type === "Income") {
                     monthMap[m].income += amt;
+                } else if (t.type === "InvestmentSell") {
+                    monthMap[m].investment -= amt; // ยอดขายนำมาหักลบกับยอดลงทุนของเดือน
                 } else if (t.type === "Expense") {
                     monthMap[m].expense += amt;
                 } else if (t.type === "Investment") {
@@ -1834,6 +1992,7 @@
                             </div>
                             <div class="flex items-center gap-1">
                                 <button onclick="openTopUpInvModal('${inv.id}')" class="text-emerald-700 text-xs px-2.5 py-1 border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 rounded-xl cursor-pointer font-bold transition">💰 ซื้อเพิ่ม</button>
+                                <button onclick="openSellInvModal('${inv.id}')" class="text-amber-700 text-xs px-2.5 py-1 border border-amber-200 bg-amber-50 hover:bg-amber-100 rounded-xl cursor-pointer font-bold transition">💵 ขาย/ถอน</button>
                                 <button onclick="openEditInvModal('${inv.id}')" class="text-blue-600 text-xs px-2.5 py-1 border border-slate-200 bg-white hover:bg-blue-50 rounded-xl cursor-pointer font-semibold transition">✏️ แก้ไขราคา</button>
                                 <button onclick="deleteInvestment('${inv.id}', '${inv.name}')" class="text-slate-400 hover:text-rose-600 p-1 text-xs cursor-pointer"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                             </div>
@@ -2009,7 +2168,8 @@
                         document.getElementById("txTableBody").innerHTML = list.map(t => {
                 const isInc = t.type === "Income";
                 const isTrf = t.type === "Transfer";
-                const isInv = t.type === "Investment"; // เพิ่มการเช็คประเภท Investment
+                const isInv = t.type === "Investment"; 
+                const isInvSell = t.type === "InvestmentSell"; // เพิ่มบรรทัดนี้
 
                 // กำหนดสีและไอคอนเฉพาะ
                 let iconBg = "bg-rose-50 text-rose-600 border-rose-200/60";
@@ -2054,6 +2214,7 @@
                         <td class="py-3 px-2.5 text-right font-extrabold whitespace-nowrap text-sm ${textCol}">
                             ${sign}฿${fmt(t.amount)}
                         </td>
+
                         <td class="py-3 px-2.5 text-center whitespace-nowrap">
                             <button onclick="openEditTxModal('${t.id}')" class="text-blue-600 hover:bg-blue-50 px-2 py-1 rounded-lg mr-1 cursor-pointer font-semibold transition">แก้ไข</button>
                             <button onclick="deleteTx('${t.id}')" class="text-slate-400 hover:text-rose-600 hover:bg-rose-50 px-2 py-1 rounded-lg cursor-pointer font-semibold transition">ลบ</button>
